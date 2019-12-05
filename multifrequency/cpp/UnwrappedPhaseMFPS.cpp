@@ -5,6 +5,7 @@
 using namespace cv;
 using namespace std;
 
+#if 0
 //const int gHeight = 1280;
 //const int gWidth = 768;
 const int gWidth = 1280;
@@ -87,6 +88,7 @@ void CalImageWrappedPhase()
 				float I3 = phase3.at<float>(i, j);
 				float I4 = phase4.at<float>(i, j);
 
+				//(I4-I2)/(I1-I3)
 				if (I4 == I2 && I1 > I3 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 0;
@@ -270,4 +272,5 @@ int main()
 
 	return 0;
 }
+#endif
 

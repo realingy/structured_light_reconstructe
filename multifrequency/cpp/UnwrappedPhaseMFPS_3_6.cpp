@@ -5,6 +5,7 @@
 using namespace cv;
 using namespace std;
 
+#if 1
 const int gWidth = 1600;
 const int gHeight = 1200;
 
@@ -90,27 +91,27 @@ void CalImageWrappedPhase()
 				float I5 = phase3.at<float>(i, j);
 				float I6 = phase4.at<float>(i, j);
 
-				if (I4 == I2 && I1 > I3 ) // 四个特殊位置
+				if (2*I4 == I2 + I6 && 2*I3 > I1 + I5 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 0;
 				}
-				else if (I4 == I2 && I1 < I3 ) // 四个特殊位置
+				else if (2*I4 == I2 + I6 && 2*I3 < I1 + I5 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = CV_PI;
 				}
-				else if (I4 > I2 && I1 == I3 ) // 四个特殊位置
+				else if (2*I4 > I2 + I6 && 2*I3 == I1 + I5 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = CV_PI / 2;
 				}
-				else if (I4 < I2 && I1 == I3 ) // 四个特殊位置
+				else if (2*I4 < I2 + I6 && 2*I3 == I1 + I5 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 3 * CV_PI / 2;
 				}
-				else if ( I1 < I3 ) //第二、三象限
+				else if ( 2*I3 < I1+I5 ) //第二、三象限
 				{
 					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) ) + CV_PI;
 				}
-				else if (I1 > I3 && I4 > I2) //第一象限
+				else if ( 2*I3 > I1+I5 && 2*I4 > I2+I6) //第一象限
 				{
 					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) );
 				}
@@ -273,4 +274,6 @@ int main()
 
 	return 0;
 }
+
+#endif
 
