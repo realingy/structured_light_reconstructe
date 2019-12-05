@@ -5,8 +5,8 @@ close all;
 clear;
 
 % 图片的初始化
-width = 1024;
-heigth = 768;
+width = 1280;
+heigth = 720;
 
 % 三频率
 freq = [70 64 59];  %像素单位为个数，可以看做频率；正弦函数为周期含义
@@ -39,23 +39,24 @@ for i = 1:3
     end
 end
 
-% 显示保存12张图
+% 显示保存12张相位移编码图
 for i = 1:3
     for j = 1:4
         % n = 4*(i-1)+j;
         % h = figure(n);
         % imshow(C{i,j});
-    filename = ['./pattern/vPhase_',num2str(i-1),'_',num2str(j-1),'.bmp'];
-	imwrite(C{j}, filename); % 保存
+        filename = ['./pattern/vPhase_',num2str(i-1),'_',num2str(j-1),'.bmp'];
+        imwrite(C{i,j}, filename); % 保存
     end
 end
 
 % 初始化三组处理后的图片灰度矩阵
 % phi也是分块矩阵
-% 存储相位主值图像
+
+% 存储相位主值（包裹相位）图像
 phi = cell(3,1);
 for i = 1:3
-    phi{i,1} = zeros(heigth,width);
+    phi{i,1} = zeros(heigth, width);
 end
 
 % 求取相位差
@@ -99,9 +100,8 @@ PH12 = zeros(heigth,width);
 PH23 = zeros(heigth,width);
 PH123 = zeros(heigth,width);
 
-% 计算相差
 % 相差计算
-% 解相
+% 解相（计算绝对相位）
 for g = 1:heigth
 	for k = 1:width
 		% 计算第一组和第二组的相差
