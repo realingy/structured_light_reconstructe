@@ -1,5 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <fstream>
 
 using namespace cv;
 using namespace std;
@@ -9,48 +10,38 @@ using namespace std;
 const int gWidth = 1280;
 const int gHeight = 720;
 
-/*
-float I0[gWidth * gHeight];
-float I1[gWidth * gHeight];
-float I2[gWidth * gHeight];
-float I3[gWidth * gHeight];
-*/
-Mat phase0(gHeight, gWidth, CV_32F);
-Mat phase1(gHeight, gWidth, CV_32F);
-Mat phase2(gHeight, gWidth, CV_32F);
-Mat phase3(gHeight, gWidth, CV_32F);
 
-// ä¸‰é¢‘ç‡, å†³å®šæ­£å¼¦å‡½æ•°çš„å‘¨æœŸ
+// ÈıÆµÂÊ, ¾ö¶¨ÕıÏÒº¯ÊıµÄÖÜÆÚ
 int freq[] = { 70, 64, 59 };
 
-// å­˜å‚¨3ç»„å…±è®¡12å¼ å›¾(ä¸‰ä¸ªé¢‘ç‡ï¼Œå››ä¸ªç›¸ä½)
+// ´æ´¢3×é¹²¼Æ12ÕÅÍ¼(Èı¸öÆµÂÊ£¬ËÄ¸öÏàÎ»)
 Mat image[3][4];
 
-// ç”Ÿæˆ3ç»„å…±è®¡12å¼ patternå›¾(ä¸‰ä¸ªé¢‘ç‡ï¼Œå››ä¸ªç›¸ä½)
+// Éú³É3×é¹²¼Æ12ÕÅpatternÍ¼(Èı¸öÆµÂÊ£¬ËÄ¸öÏàÎ»)
 Mat pattern[3][4];
 
-// ç›¸ä½ä¸»å€¼ï¼ˆåŒ…è£¹ç›¸ä½ï¼‰å›¾åƒ
-Mat imageUnwrappedPhase[3];
+// ÏàÎ»Ö÷Öµ£¨°ü¹üÏàÎ»£©Í¼Ïñ
+Mat imageWrappedPhase[3];
 
-// åˆ©ç”¨ä½™å¼¦å‡½æ•°ç”Ÿæˆ12å¼ patternå›¾
+// ÀûÓÃÓàÏÒº¯ÊıÉú³É12ÕÅpatternÍ¼
 void PasheShiftPatternGenerator(bool vertical)
 {
-	for (int i = 0; i < 3; i++) //ä¸‰ä¸ªé¢‘ç‡
+	cout << "\n============================================================================" << endl;
+	cout << "1 ¸ù¾İÈı¸öÆµÂÊÉú³ÉÈıÖÖÏàÎ»ÒÆpattern" << endl;
+	for (int i = 0; i < 3; i++) //Èı¸öÆµÂÊ
 	{
-		for (int j = 0; j < 4; j++) //å››ä¸ªç›¸ä½
+		for (int j = 0; j < 4; j++) //ËÄ¸öÏàÎ»
 		{
 			pattern[i][j] = Mat(gHeight, gWidth, CV_32F);
-			// éå†å›¾åƒå¡«å……æ•°æ®
+			// ±éÀúÍ¼ÏñÌî³äÊı¾İ
 			for (int r = 0; r < gHeight; r++) {
 				float* ptr = pattern[i][j].ptr<float>(r);
 				for (int l = 0; l < gWidth; l++) {
-					ptr[l] = (float)(128.0 + (float)127.0 * sin(2 * CV_PI * l * freq[i] / gWidth + j * CV_PI / 2));
+					ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * freq[i] / gWidth + j * CV_PI / 2);
 				}
 			}
 
-			// ç°åº¦å½’ä¸€åŒ–
-
-			// ä¿å­˜patternå›¾åƒ
+			// ±£´æpatternÍ¼Ïñ
 			stringstream ss;
 			string filename;
 			ss << "pattern/vPhase_" << i << "_" << j << ".bmp";
@@ -58,73 +49,179 @@ void PasheShiftPatternGenerator(bool vertical)
 			cout << "save pattern: " << filename << endl;
 			cv::imwrite(filename, pattern[i][j]);
 			ss.clear();
+
+			// »Ò¶È¹éÒ»»¯
+			cv::normalize(pattern[i][j], pattern[i][j]);
 		}
 	}
 }
 
-/*
-% æ±‚å–ç›¸ä½å·®
-% è®¡ç®—æ¯ç§é¢‘ç‡å¯¹åº”çš„ç›¸ä½ä¸»å€¼
-% è¾“å‡ºä¸‰ç§é¢‘ç‡çš„ç›¸ä½ä¸»å€¼ï¼Œç”¨äºç›¸å·®è®¡ç®—
-*/
-void CalWrappedPhase()
+// ¼ÆËãÃ¿ÖÖÆµÂÊ¶ÔÓ¦µÄÏàÎ»Ö÷Öµ
+// Êä³öÈıÖÖÆµÂÊµÄÏàÎ»Ö÷Öµ(°ü¹üÏàÎ»)£¬ÓÃÓÚÏà²î¼ÆËã
+void CalImageWrappedPhase()
 {
-	// å¯¹äº3ç»„ä¸­çš„æ¯ä¸€ç»„å›¾ç‰‡ï¼Œæ¯ä¸€ç»„ç›¸åŒé¢‘ç‡çš„æœ‰å››å¼ å›¾ç‰‡
+	cout << "\n============================================================================" << endl;
+	cout << "2 ¼ÆËãÃ¿ÖÖÆµÂÊ¶ÔÓ¦µÄÏàÎ»Ö÷Öµ, Êä³öÈıÖÖÆµÂÊµÄÏàÎ»Ö÷Öµ(°ü¹üÏàÎ»)£¬ÓÃÓÚÏà²î¼ÆËã " << endl;
+
+	Mat phase1(gHeight, gWidth, CV_32F);
+	Mat phase2(gHeight, gWidth, CV_32F);
+	Mat phase3(gHeight, gWidth, CV_32F);
+	Mat phase4(gHeight, gWidth, CV_32F);
+	
 	for(int n = 0; n < 3; n++)
 	{
-		phase0 = pattern[n][0];
-		phase1 = pattern[n][1];
-		phase2 = pattern[n][2];
-		phase3 = pattern[n][3];
+		phase1 = pattern[n][0];
+		phase2 = pattern[n][1];
+		phase3 = pattern[n][2];
+		phase4 = pattern[n][3];
 
-		// åŒ…è£¹ç›¸ä½å›¾åƒï¼ˆæ¯ä¸ªé¢‘ç‡æœ‰ä¸€ä¸ªå¯¹åº”çš„åŒ…è£¹ç›¸ä½å›¾åƒï¼‰
-		imageUnwrappedPhase[n] = Mat(gHeight, gWidth, CV_32F);
+		// °ü¹üÏàÎ»Í¼£¨Ã¿¸öÆµÂÊÓĞÒ»¸ö¶ÔÓ¦µÄ°ü¹üÏàÎ»Í¼£©
+		imageWrappedPhase[n] = Mat(gHeight, gWidth, CV_32F);
 
-		for (int i = 0; i < gHeight; i++) {
-			for (int j = 0; j < gWidth; j++) {
-				
-				float & I0 = phase0.at<float>(i, j);
-				float & I1 = phase1.at<float>(i, j);
-				float & I2 = phase0.at<float>(i, j);
-				float & I3 = phase0.at<float>(i, j);
+		for (int i = 0; i < gHeight; i++)
+		{
+			for (int j = 0; j < gWidth; j++)
+			{
+				float I1 = phase1.at<float>(i, j);
+				float I2 = phase2.at<float>(i, j);
+				float I3 = phase3.at<float>(i, j);
+				float I4 = phase4.at<float>(i, j);
 
-				if (I3.at<float>(i, j) == I1.at<float>(i, j) &&
-					I0.at<float>(i, j) > I2.at<float>(i, j)) // å››ä¸ªç‰¹æ®Šä½ç½®
+				if (I4 == I2 && I1 > I3 ) // ËÄ¸öÌØÊâÎ»ÖÃ
 				{
-					imageUnwrappedPhase[n].at<float>(i,j) = 0;
+					imageWrappedPhase[n].at<float>(i,j) = 0;
 				}
-				else if (I3.at<float>(i, j) == I1.at<float>(i, j) &&
-					I0.at<float>(i, j) < I2.at<float>(i, j)) // å››ä¸ªç‰¹æ®Šä½ç½®
+				else if (I4 == I2 && I1 < I3 ) // ËÄ¸öÌØÊâÎ»ÖÃ
 				{
-					imageUnwrappedPhase[n].at<float>(i,j) = CV_PI;
+					imageWrappedPhase[n].at<float>(i,j) = CV_PI;
 				}
-				else if (I3.at<float>(i, j) > I1.at<float>(i, j) &&
-					I0.at<float>(i, j) == I2.at<float>(i, j)) // å››ä¸ªç‰¹æ®Šä½ç½®
+				else if (I4 > I2 && I1 == I3 ) // ËÄ¸öÌØÊâÎ»ÖÃ
 				{
-					imageUnwrappedPhase[n].at<float>(i,j) = CV_PI / 2;
+					imageWrappedPhase[n].at<float>(i,j) = CV_PI / 2;
 				}
-				else if (I3.at<float>(i, j) < I1.at<float>(i, j) &&
-					I0.at<float>(i, j) == I2.at<float>(i, j)) // å››ä¸ªç‰¹æ®Šä½ç½®
+				else if (I4 < I2 && I1 == I3 ) // ËÄ¸öÌØÊâÎ»ÖÃ
 				{
-					imageUnwrappedPhase[n].at<float>(i,j) = 3 * CV_PI / 2;
+					imageWrappedPhase[n].at<float>(i,j) = 3 * CV_PI / 2;
 				}
-				else if (I0.at<float>(i, j) < I2.at<float>(i, j))
+				else if ( I1 < I3 ) //µÚ¶ş¡¢ÈıÏóÏŞ
 				{
-					imageUnwrappedPhase[n].at<float>(i,j) = atan((I3(g, k) - I1(g, k)) / (I0(g, k) - I2(g, k))) + CV_PI;
+					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) ) + CV_PI;
 				}
-
+				else if (I1 > I3 && I4 > I2) //µÚÒ»ÏóÏŞ
+				{
+					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) );
+				}
+				else if (I1 > I3&& I4 < I2) //µÚÒ»ÏóÏŞ
+				{
+					imageWrappedPhase[n].at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2*CV_PI;
+				}
 			}
 		}
-
 	}
+
+	/*
+	ofstream file("wrapphase1.txt");
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			file << imageWrappedPhase[0].at<float>(i, j) << "\t";
+		}
+		file << endl;
+	}
+
+	ofstream file2("wrapphase2.txt");
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			file2 << imageWrappedPhase[1].at<float>(i, j) << "\t";
+		}
+		file2 << endl;
+	}
+	*/
 }
 
+// ¼ÆËãÏàÎ»²î£¨½â°ü¹üÏàÎ»/ÏàÎ»Õ¹¿ª£©
+void CalPhaseDifference()
+{
+	cout << "\n============================================================================" << endl;
+	cout << "3 ¸ù¾İÈıÖÖÆµÂÊµÄÏàÎ»Ö÷Öµ(°ü¹üÏàÎ»)£¬¼ÆËãÏàÎ»²î£¨ÏàÎ»Õ¹¿ª£© " << endl;
+
+	// ³õÊ¼»¯Ïà²î±äÁ¿
+	// ¶àÆµÏà²î
+	Mat PH12 = Mat(gHeight, gWidth, CV_32F);
+	Mat PH23 = Mat(gHeight, gWidth, CV_32F);
+	Mat PH123 = Mat(gHeight, gWidth, CV_32F);
+
+	// Á½Á½Ïà²î¼ÆËã
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			float PH0 = imageWrappedPhase[0].at<float>(i, j);
+			float PH1 = imageWrappedPhase[1].at<float>(i, j);
+			float PH2 = imageWrappedPhase[2].at<float>(i, j);
+
+			// ¼ÆËãµÚÒ»×éºÍµÚ¶ş×éµÄÏàÎ»²î
+			if(PH0 > PH1) {
+				PH12.at<float>(i, j) = PH0 - PH1;
+			} else {
+				PH12.at<float>(i, j) = PH0 - PH1 + 2*CV_PI;
+			}
+			// ¼ÆËãµÚ¶ş×éºÍµÚÈı×éµÄÏàÎ»²î
+			if(PH1 > PH2) {
+				PH23.at<float>(i, j) = PH1 - PH2;
+			} else {
+				PH23.at<float>(i, j) = PH1 - PH2 + 2*CV_PI;
+			}
+		}
+	}
+
+	// ¼ÆËã×îÖÕÏà²î
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			if( PH12.at<float>(i,j) > PH23.at<float>(i, j) ) {
+				PH123.at<float>(i, j) = PH12.at<float>(i, j) - PH23.at<float>(i, j);
+			} else {
+				PH123.at<float>(i, j) = PH12.at<float>(i, j) - PH23.at<float>(i, j) + 2*CV_PI;
+			}
+		}
+	}
+
+	cv::normalize(PH12, PH12, 0, 255, NORM_MINMAX);
+	cv::normalize(PH23, PH23, 0, 255, NORM_MINMAX);
+	cv::normalize(PH123, PH123, 0, 255, NORM_MINMAX);
+
+	cout << "saving phase diff of phase 1 & phase 2\n";
+	cv::imwrite("output/PhaseDiff12.bmp", PH12);
+	cout << "saving phase diff of phase 2 & phase 3\n";
+	cv::imwrite("output/PhaseDiff23.bmp", PH23);
+	cout << "saving phase diff of phase 1 & phase 2 & phase 3\n";
+	cv::imwrite("output/PhaseDiff123.bmp", PH123);
+
+	// »Ò¶È¹éÒ»»¯
+	for (size_t i = 0; i < 3; i++)
+	{
+		cv::normalize(imageWrappedPhase[i], imageWrappedPhase[i], 0, 255, NORM_MINMAX);
+	}
+	cout << "saving wrapped phase 1\n";
+	cv::imwrite("output/WrapPhase1.bmp", imageWrappedPhase[0]);
+	cout << "saving wrapped phase 2\n";
+	cv::imwrite("output/WrapPhase2.bmp", imageWrappedPhase[1]);
+	cout << "saving wrapped phase 3\n";
+	cv::imwrite("output/WrapPhase3.bmp", imageWrappedPhase[2]);
+}
+
+
 /*
-// è¾“å…¥ï¼šåŒ…è£¹ç›¸ä½
-// è¾“å‡ºï¼šç»å¯¹ç›¸ä½ï¼ˆå±•å¼€ç›¸ä½ï¼‰
+// ÊäÈë£º°ü¹üÏàÎ»
+// Êä³ö£º¾ø¶ÔÏàÎ»£¨Õ¹¿ªÏàÎ»£©
 void decMultiPhase5(Mat *imgShift, Mat &imgAbsPhase)
 {
-	//è·å–åŒ…è£¹ç›¸ä½
+	//»ñÈ¡°ü¹üÏàÎ»
 	float * dPtr  = (float *)imgAbsPhase.data;
 	Mat imgPhase[5] ;
 	for(int k=0; k<5; k++)
@@ -167,8 +264,10 @@ void decMultiPhase5(Mat *imgShift, Mat &imgAbsPhase)
 
 int main()
 {
-	PasheShiftPatternGenerator(true); //ç”Ÿæˆpattern
-		
+	PasheShiftPatternGenerator(true); //Éú³Épattern
+	CalImageWrappedPhase(); // °ü¹üÏàÎ»¼ÆËã
+	CalPhaseDifference(); // ½â°ü¹üÏàÎ»£¨ÏàÎ»Õ¹¿ª£©
+
 	return 0;
 }
 
