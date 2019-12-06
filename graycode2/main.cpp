@@ -37,8 +37,21 @@ Mat pattern[4];
 // 相位主值（包裹相位）图
 Mat imageWrappedPhase;
 
+Mat img1;
+Mat img2;
+Mat img3;
+Mat img4;
+Mat img5;
+Mat img6;
+
 void LoadImage()
 {
+	pattern[0] = imread("pattern/vPhase_0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[1] = imread("pattern/vPhase_1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[2] = imread("pattern/vPhase_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[3] = imread("pattern/vPhase_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+
+	/*
 	cout << "\n============================================================================" << endl;
 	cout << "1 根据三个频率生成三种相位移pattern" << endl;
 	for (int j = 0; j < 4; j++) //四个相位
@@ -48,7 +61,7 @@ void LoadImage()
 		for (int r = 0; r < gHeight; r++) {
 			float* ptr = pattern[j].ptr<float>(r);
 			for (int l = 0; l < gWidth; l++) {
-				ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * 32 / gWidth + j * CV_PI / 2);
+				ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * 64 / gWidth + j * CV_PI / 2);
 			}
 		}
 
@@ -61,29 +74,18 @@ void LoadImage()
 		cv::imwrite(filename, pattern[j]);
 		ss.clear();
 	}
+	*/
 }
 
 // 计算相位主值(包裹相位)
 void CalWrappedPhase()
 {
-	cout << "\n============================================================================" << endl;
+	//cout << "\n============================================================================" << endl;
 
-	Mat phase1(gHeight, gWidth, CV_32FC1);
-	Mat phase2(gHeight, gWidth, CV_32FC1);
-	Mat phase3(gHeight, gWidth, CV_32FC1);
-	Mat phase4(gHeight, gWidth, CV_32FC1);
-
-	phase1 = pattern[0];
-	phase2 = pattern[1];
-	phase3 = pattern[2];
-	phase4 = pattern[3];
-
-	/*
-	phase1 = cv::imread("pattern/vPhase_0.bmp");
-	phase2 = cv::imread("pattern/vPhase_1.bmp");
-	phase3 = cv::imread("pattern/vPhase_2.bmp");
-	phase4 = cv::imread("pattern/vPhase_3.bmp");
-	*/
+	Mat phase1 = pattern[0];
+	Mat phase2 = pattern[1];
+	Mat phase3 = pattern[2];
+	Mat phase4 = pattern[3];
 
 	// 包裹相位图（每个频率有一个对应的包裹相位图）
 	imageWrappedPhase = Mat(gHeight, gWidth, CV_32F);
@@ -92,10 +94,10 @@ void CalWrappedPhase()
 	{
 		for (int j = 0; j < gWidth; j++)
 		{
-			float I1 = phase1.at<float>(i, j);
-			float I2 = phase2.at<float>(i, j);
-			float I3 = phase3.at<float>(i, j);
-			float I4 = phase4.at<float>(i, j);
+			float I1 = (float)phase1.at<uchar>(i, j);
+			float I2 = (float)phase2.at<uchar>(i, j);
+			float I3 = (float)phase3.at<uchar>(i, j);
+			float I4 = (float)phase4.at<uchar>(i, j);
 			
 			if (I4 == I2 && I1 > I3) // 四个特殊位置
 			{
@@ -150,37 +152,29 @@ void CalWrappedPhase()
 	}
 	*/
 
-	// 灰度归一化
-	cv::normalize(imageWrappedPhase, imageWrappedPhase, 0, 255, NORM_MINMAX);
-	cout << "saving wrapped phase \n";
-	cv::imwrite("WrapPhase.bmp", imageWrappedPhase);
 
 }
 
 // 解包裹相位(相位展开)
 void CalUnwrappedPhase()
 {
-	// 读取6张格雷码调制图像
-	Mat img1 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img2 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img3 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img4 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img5 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img6 = imread(, CV_LOAD_IMAGE_GRAYSCALE);
-
-	// 相位序列Mat
-	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0));
+	img1 = imread("pattern/vGray1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img2 = imread("pattern/vGray3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img3 = imread("pattern/vGray5.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img4 = imread("pattern/vGray7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img5 = imread("pattern/vGray9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img6 = imread("pattern/vGray11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
 
 	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
-	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
-	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
-	threshold(img3, img3, thresh, 255, CV_THRESH_BINARY);
-	threshold(img4, img4, thresh, 255, CV_THRESH_BINARY);
-	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
-	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
+	threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
+	threshold(img2, img2, thresh, 1, CV_THRESH_BINARY);
+	threshold(img3, img3, thresh, 1, CV_THRESH_BINARY);
+	threshold(img4, img4, thresh, 1, CV_THRESH_BINARY);
+	threshold(img5, img5, thresh, 1, CV_THRESH_BINARY);
+	threshold(img6, img6, thresh, 1, CV_THRESH_BINARY);
 
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
@@ -188,47 +182,64 @@ void CalUnwrappedPhase()
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
 
-	cv::imwrite("../myimages/bin1.bmp", img1);
-	cv::imwrite("../myimages/bin2.bmp", img2);
-	cv::imwrite("../myimages/bin3.bmp", img3);
-	cv::imwrite("../myimages/bin4.bmp", img4);
-	cv::imwrite("../myimages/bin5.bmp", img5);
-	cv::imwrite("../myimages/bin6.bmp", img6);
+	/*
+	cv::imwrite("pattern/bin1.bmp", img1);
+	cv::imwrite("pattern/bin2.bmp", img2);
+	cv::imwrite("pattern/bin3.bmp", img3);
+	cv::imwrite("pattern/bin4.bmp", img4);
+	cv::imwrite("pattern/bin5.bmp", img5);
+	cv::imwrite("pattern/bin6.bmp", img6);
+	*/
 
-	int x, y;
-	int width = img1.cols;
-	int height = img1.rows;
+	// 相位序列Mat
+	// Mat phase_series(gHeight, gWidth, CV_32FC1, Scalar(0.0));
+	Mat phase_series(gHeight, gWidth, CV_8UC1, Scalar(0.0));
+
 	uchar pre_series, cur_series;
 	float pre_unphase, cur_unphase;
-	for (y = 0; y < height; y++)
+	for (int y = 0; y < gHeight; y++)
 	{
-		uchar *img1_ptr = img1.ptr<uchar>(y);
-		uchar *img2_ptr = img2.ptr<uchar>(y);
-		uchar *img3_ptr = img3.ptr<uchar>(y);
-		uchar *img4_ptr = img4.ptr<uchar>(y);
-		uchar *img5_ptr = img5.ptr<uchar>(y);
-		uchar *img6_ptr = img6.ptr<uchar>(y);
-
-		for (x = 0; x < width; x++)
+		for (int x = 0; x < gWidth; x++)
 		{
-			phase_series.at<uchar>(y, x) = ((int)(*img1_ptr++)) * 32 + ((int)(*img2_ptr++)) * 16
-				+ ((int)(*img3_ptr++)) * 8 + ((int)(*img4_ptr++)) * 4
-				+ ((int)(*img5_ptr++)) * 2 + ((int)(*img6_ptr++)) * 1;
+			phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 32
+											+ img2.at<uchar>(y, x) * 16
+											+ img3.at<uchar>(y, x) * 8
+											+ img4.at<uchar>(y, x) * 4
+											+ img5.at<uchar>(y, x) * 2
+											+ img6.at<uchar>(y, x) * 1;
 		}
 	}
 
 	medianBlur(phase_series, phase_series, 9); //中值滤波
 
-	//cv::imwrite("../myimages/phase_series.bmp", phase_series);
+	cv::imwrite("pattern/phase_series.bmp", phase_series);
 
-	for (y = 0; y < height; y++)
+	ofstream file("phase_series.txt");
+	for (int i = 0; i < gHeight; i++)
 	{
-		for (x = 0; x < width; x++)
+		for (int j = 0; j < gWidth; j++)
 		{
-			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
-			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + src.at<float>(y, x);
+			file << (int)phase_series.at<uchar>(i, j) << "\t";
+		}
+		file << endl;
+	}
+
+	Mat dst(gHeight, gWidth, CV_32FC1);
+
+	for (int y = 0; y < gHeight; y++)
+	{
+		for (int x = 0; x < gWidth; x++)
+		{
+			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + imageWrappedPhase.at<float>(y, x);
 		}
 	}
+
+	cv::imwrite("UnwrappedPhase.bmp", dst);
+
+	// 灰度归一化
+	cv::normalize(imageWrappedPhase, imageWrappedPhase, 0, 255, NORM_MINMAX);
+	cout << "saving wrapped phase \n";
+	cv::imwrite("WrapPhase.bmp", imageWrappedPhase);
 
 	/*
 	if (series_phase_txt)
@@ -257,9 +268,125 @@ int main(int argc, char **argv)
 {
 	LoadImage(); //加载图像
 	CalWrappedPhase(); //计算包裹相位
+	CalUnwrappedPhase(); //解包裹
 
     return 0;
 }
 
+#if 0
+int decodeGrayCodes(Mat * & gray_codes, //编码图
+					Mat & decoded_cols, //解码图
+					Mat & mask,			//mask
+					int& n_cols,		//编码图数
+					int& col_shift,
+					int sl_thresh )		//阈值
+{
+	// Extract width and height of images. 由相机拍摄的第一张图像，获取其高和宽
+	//int cam_width  = gray_codes[0]->width;
+	//int cam_height = gray_codes[0]->height;
+	int cam_width  = gHeight;
+	int cam_height = gWidth;
 
+	Mat gray_1 = Mat(Size(cam_width, cam_height), CV_8U, 1);    //格雷码图1
+	Mat gray_2 = Mat(Size(cam_width, cam_height), CV_8U, 1);
+	Mat temp = Mat(Size(cam_width, cam_height), CV_8U, 1);    //图像的临时存储变量
+
+	Mat bit_plane_1 = Mat(Size(cam_width, cam_height), CV_8U, 1);
+	Mat bit_plane_2 = Mat(Size(cam_width, cam_height), CV_8U, 1);    //位平面
+
+	//对mask图像中的像素设置值为 0
+	mask = Mat::zeros(gHeight, gWidth, CV_32FC1);
+
+	// Decode Gray codes for projector columns.
+
+	decoded_cols = Mat::zeros(gHeight, gWidth, CV_32FC1);
+	for(int i=0; i < n_cols; i++){
+		// Decode bit-plane and update mask.          解码位平面   更新掩码
+		// cvCvtColor(gray_codes[2*(i+1)],   gray_1, CV_RGB2GRAY);         //从拍到的第三张图像开始，将相机拍到的连续两张三通道的图像转换为灰度图
+		// cvCvtColor(gray_codes[2*(i+1)+1], gray_2, CV_RGB2GRAY);
+
+		cvtColor(gray_codes[2*(i+1)], gray_1, COLOR_BGR2GRAY);
+		cvtColor(gray_codes[2*(i+1) + 1], gray_2, COLOR_BGR2GRAY);
+
+		//将两张灰度图作差，差图的绝对值保存到temp临时变量里
+		absdiff(gray_1, gray_2, temp);
+
+		// cvCmpS(out, 100, out, CV_CMP_GE);
+		// cvThreshold(out1, out1, 100, 255, CV_THRESH_BINARY);
+		//cvCmpS(temp, sl_thresh, temp, CV_CMP_GE);                       //比较temp图像的像素点与 sl_thresh 的大小，结果存放到temp
+		threshold(temp, temp, sl_thresh, 255, CV_THRESH_BINARY);
+
+		//cvOr(temp, mask, mask);                                         //temp和mask两个矩阵对应元素做或运行,
+		bitwise_xor(temp, mask, mask);
+
+		//cvCmp(gray_1, gray_2, bit_plane_2, CV_CMP_GE);                  //比较两幅相应的图像的像素点,结果存到bit_plane_2中
+		bit_plane_2 = gray_1 - gray_2;
+
+		// Convert from gray code to decimal value.   格雷码转换为十进制值
+		if (i > 0) {
+			//cvXor(bit_plane_1, bit_plane_2, bit_plane_1); //矩阵进行异或操作
+			bitwise_xor(bit_plane_1, bit_plane_2, bit_plane_1);
+		}
+		else {
+			//cvCopyImage(bit_plane_2, bit_plane_1); //bit_plane_2复制到了bit_plane_1，cvCopyImage使用时目标矩阵必须提前分配内存
+			bit_plane_1 = bit_plane_2;
+		}
+
+		// cvAddS(decoded_cols, cvScalar(pow(2.0,n_cols-i-1)), decoded_cols, bit_plane_1);     //图像加常量
+		// cvAddS(decoded_cols, cvScalar(pow(2.0,n_cols-i-1)), decoded_cols, bit_plane_1);     //图像加常量
+
+	}
+
+	cvSubS(decoded_cols, cvScalar(col_shift), decoded_cols);            //矩阵和值做减法  decoded_cols = decoded_cols - cvScalar(col_shift)
+
+	/*
+	// Decode Gray codes for projector rows.
+	cvZero(decoded_rows);
+	for(int i=0; i<n_rows; i++){
+		// Decode bit-plane and update mask.
+		cvCvtColor(gray_codes[2*(i+n_cols+1)],   gray_1, CV_RGB2GRAY);
+		cvCvtColor(gray_codes[2*(i+n_cols+1)+1], gray_2, CV_RGB2GRAY);
+		cvAbsDiff(gray_1, gray_2, temp);
+		cvCmpS(temp, sl_thresh, temp, CV_CMP_GE);
+		cvOr(temp, mask, mask);
+		cvCmp(gray_1, gray_2, bit_plane_2, CV_CMP_GE);
+
+		// Convert from gray code to decimal value.
+		if(i>0)
+			cvXor(bit_plane_1, bit_plane_2, bit_plane_1);
+		else
+			cvCopyImage(bit_plane_2, bit_plane_1);
+
+		cvAddS(decoded_rows, cvScalar(pow(2.0,n_rows-i-1)), decoded_rows, bit_plane_1);
+	}
+
+	cvSubS(decoded_rows, cvScalar(row_shift), decoded_rows);
+	*/
+
+
+	// Eliminate invalid column/row estimates.
+	// Note: This will exclude pixels if either the column or row is missing or erroneous.
+	cvCmpS(decoded_cols, proj_width-1,  temp, CV_CMP_LE);
+	cvAnd(temp, mask, mask);
+	cvCmpS(decoded_cols, 0,  temp, CV_CMP_GE);
+	cvAnd(temp, mask, mask);
+	cvCmpS(decoded_rows, proj_height-1, temp, CV_CMP_LE);
+	cvAnd(temp, mask, mask);
+	cvCmpS(decoded_rows, 0,  temp, CV_CMP_GE);
+	cvAnd(temp, mask, mask);
+	cvNot(mask, temp);
+	cvSet(decoded_cols, cvScalar(NULL), temp);
+	cvSet(decoded_rows, cvScalar(NULL), temp);
+
+	// Free allocated resources.
+	cvReleaseImage(&gray_1);
+	cvReleaseImage(&gray_2);
+	cvReleaseImage(&bit_plane_1);
+	cvReleaseImage(&bit_plane_2);
+	cvReleaseImage(&temp);
+
+	// Return without errors.
+	return 0;
+}
+#endif
 
