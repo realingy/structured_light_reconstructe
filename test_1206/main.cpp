@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 #endif
 
 #if 0
-	// images Rectified......
+	// 图像校正......
 	const string Phaseimageslistfn  = "../mydata/input/phase_images.xml";
 	const string Rectifiedimageslistfn = "../mydata/input/Rect_phase_images.xml";
      
