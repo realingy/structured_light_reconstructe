@@ -25,13 +25,13 @@ const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
 const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
 */
 
-/*
+#if 1
 const int gWidth = 1600;
 const int gHeight = 1200;
-*/
-
+#else
 const int gWidth = 1280;
 const int gHeight = 720;
+#endif
 
 // 存储编码图像（四步相移）
 Mat image[4];
@@ -49,23 +49,11 @@ Mat img4;
 Mat img5;
 Mat img6;
 
-void LoadImage()
+void PhaseShiftPatternGenerate()
 {
-	pattern[0] = imread("pattern/vPhase_0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[1] = imread("pattern/vPhase_1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[2] = imread("pattern/vPhase_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[3] = imread("pattern/vPhase_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-
-	/*
-	pattern[0] = imread("image/Image_8.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[1] = imread("image/Image_9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[2] = imread("image/Image_10.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	pattern[3] = imread("image/Image_11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	*/
-
 	/*
 	cout << "\n============================================================================" << endl;
-	cout << "1 根据三个频率生成三种相位移pattern" << endl;
+	cout << "根据频率生成相位移pattern" << endl;
 	for (int j = 0; j < 4; j++) //四个相位
 	{
 		pattern[j] = Mat(gHeight, gWidth, CV_32F);
@@ -89,11 +77,24 @@ void LoadImage()
 	*/
 }
 
+void LoadImage()
+{
+#if 0
+	pattern[0] = imread("pattern/vPhase_0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[1] = imread("pattern/vPhase_1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[2] = imread("pattern/vPhase_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[3] = imread("pattern/vPhase_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+#else
+	pattern[0] = imread("image/Image_8.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[1] = imread("image/Image_9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[2] = imread("image/Image_10.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[3] = imread("image/Image_11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+#endif
+}
+
 // 计算相位主值(包裹相位)
 void CalWrappedPhase()
 {
-	//cout << "\n============================================================================" << endl;
-
 	Mat phase1 = pattern[0];
 	Mat phase2 = pattern[1];
 	Mat phase3 = pattern[2];
@@ -142,15 +143,6 @@ void CalWrappedPhase()
 		}
 	}
 
-	/*
-	for (int i = 0; i < gHeight; i++)
-	{
-		for (int j = 0; j < gWidth; j++)
-		{
-		}
-	}
-	*/
-
 	Mat roi1;
 	Mat roi2;
 	for (int j = 0; j < gWidth; j++)
@@ -164,9 +156,8 @@ void CalWrappedPhase()
 	}
 
 	roi2.copyTo(imageWrappedPhase(Rect(0, 0, roi2.cols, gHeight)));
-	//roi1.copyTo(imageWrappedPhase(Rect(roi2.cols, 0, roi1.cols, gHeight)));
 
-	ofstream file("wrapphase1.txt");
+	ofstream file("wrapphase.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -175,40 +166,26 @@ void CalWrappedPhase()
 		}
 		file << endl;
 	}
-
-	/*
-	ofstream file2("wrapphase2.txt");
-	for (int i = 0; i < gHeight; i++)
-	{
-		for (int j = 0; j < gWidth; j++)
-		{
-			file2 << imageWrappedPhase[1].at<float>(i, j) << "\t";
-		}
-		file2 << endl;
-	}
-	*/
-
-
 }
 
 // 解包裹相位(相位展开)
 void CalUnwrappedPhase()
 {
+#if 0
 	img1 = imread("pattern/vGray1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img2 = imread("pattern/vGray3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img3 = imread("pattern/vGray5.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img4 = imread("pattern/vGray7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img5 = imread("pattern/vGray9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img6 = imread("pattern/vGray11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-
-	/*
+#else
 	img1 = imread("image/Image_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img2 = imread("image/Image_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img3 = imread("image/Image_4.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img4 = imread("image/Image_5.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img5 = imread("image/Image_6.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img6 = imread("image/Image_7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	*/
+#endif
 
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
@@ -226,15 +203,6 @@ void CalUnwrappedPhase()
 	bitwise_xor(img3, img4, img4);
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
-
-	/*
-	cv::imwrite("pattern/bin1.bmp", img1);
-	cv::imwrite("pattern/bin2.bmp", img2);
-	cv::imwrite("pattern/bin3.bmp", img3);
-	cv::imwrite("pattern/bin4.bmp", img4);
-	cv::imwrite("pattern/bin5.bmp", img5);
-	cv::imwrite("pattern/bin6.bmp", img6);
-	*/
 
 	// 相位序列Mat
 	// Mat phase_series(gHeight, gWidth, CV_32FC1, Scalar(0.0));
@@ -257,7 +225,7 @@ void CalUnwrappedPhase()
 
 	medianBlur(phase_series, phase_series, 9); //中值滤波
 
-	cv::imwrite("pattern/phase_series.bmp", phase_series);
+	cv::imwrite("phase_series.bmp", phase_series);
 
 	ofstream file("phase_series.txt");
 	for (int i = 0; i < gHeight; i++)
@@ -285,6 +253,17 @@ void CalUnwrappedPhase()
 	cv::normalize(imageWrappedPhase, imageWrappedPhase, 0, 255, NORM_MINMAX);
 	cout << "saving wrapped phase \n";
 	cv::imwrite("WrapPhase.bmp", imageWrappedPhase);
+
+	ofstream file2("unwrapphase.txt");
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			file2 << dst.at<float>(i, j) << "\t";
+		}
+		file2 << endl;
+	}
+	file2.close();
 
 	/*
 	if (series_phase_txt)
