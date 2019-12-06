@@ -72,18 +72,12 @@ int main(int argc, char **argv)
     {
 		printf("\nstoring the wrapped_phaseleft_txt...\n");
 		savePhase(wrapped_phaseleft_txt, wrapped_phase_left); //保存相位
-		cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left); //保存图像
     }
     cout << "Done!!!" <<endl;
 
-    // 计算左图的展开相位
-	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
     cout << "Phase unwrapping......" <<endl;
-
-	// 格雷码方式
+	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
     UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
-
-	// 古典方式
 	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
     cout << "Done!!!" <<endl;
 
@@ -92,9 +86,13 @@ int main(int argc, char **argv)
     {
 		printf("\nstoring the unwrapped_phaseleft_txt...");
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
-		cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
     }
     cout << "Done!!!" <<endl;
+
+	cv::normalize(wrapped_phase_left, wrapped_phase_left, 0, 255, NORM_MINMAX);
+	cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left);
+	cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
+
     
 	/*
 	cout << "\========================================================================\n";

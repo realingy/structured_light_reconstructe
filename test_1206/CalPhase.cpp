@@ -20,8 +20,6 @@ static bool readString( const string& filename, vector<string>& l)
     return true;
 }
 
-// 包裹相位计算
-// 输入：极线校正以后的调制图像
 Mat CalWrappedPhase(const std::string &Rect_images)
 {
     vector<string> imagelist;
@@ -41,19 +39,58 @@ Mat CalWrappedPhase(const std::string &Rect_images)
     Mat img3 = imread(imagelist[8], CV_LOAD_IMAGE_GRAYSCALE);
     Mat img4 = imread(imagelist[9], CV_LOAD_IMAGE_GRAYSCALE);
     
-    int height = img1.rows;  //行数
+    int height = img1.rows; //行数
     int width = img1.cols;  //列数
     Mat wrapped_phase(Size(width, height), CV_32FC1, Scalar(0.0));
     
-    cout << "\n=============================" <<endl;
-    cout << "channels: "  << img1.channels() <<endl;
-    cout << "height: " << height << ", width: " << width <<endl;
-
-    cout << "Calculate warpped phase......" <<endl;
+    //cout << "\n=============================" <<endl;
+    //cout << "channels: "  << img1.channels() <<endl;
+    //cout << "height: " << height << ", width: " << width <<endl;
     
-    clock_t start=0, end=0;
-    start = clock();  //开始计时
+    //clock_t start=0, end=0;
+    //start = clock();  //开始计时
 
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			float I1 = (float)img1.at<uchar>(i, j);
+			float I2 = (float)img2.at<uchar>(i, j);
+			float I3 = (float)img3.at<uchar>(i, j);
+			float I4 = (float)img4.at<uchar>(i, j);
+
+			if (I4 == I2 && I1 > I3) // 四个特殊位置
+			{
+				wrapped_phase.at<float>(i, j) = 0;
+			}
+			else if (I4 == I2 && I1 < I3) // 四个特殊位置
+			{
+				wrapped_phase.at<float>(i, j) = CV_PI;
+			}
+			else if (I4 > I2&& I1 == I3) // 四个特殊位置
+			{
+				wrapped_phase.at<float>(i, j) = CV_PI / 2;
+			}
+			else if (I4 < I2 && I1 == I3) // 四个特殊位置
+			{
+				wrapped_phase.at<float>(i, j) = 3 * CV_PI / 2;
+			}
+			else if (I1 < I3) //第二、三象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + CV_PI;
+			}
+			else if (I1 > I3&& I4 > I2) //第一象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3));
+			}
+			else if (I1 > I3&& I4 < I2) //第四象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2 * CV_PI;
+			}
+		}
+	}
+
+	/*
 	for(int i=0; i < height; i++)
     {
 		uchar *img1_data = img1.ptr<uchar>(i);
@@ -68,13 +105,14 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 											((float)(*img1_data++) - (float)(*img3_data++)));
 		}
 	}
+	*/
     
-    end = clock(); //计时结束
-	cout << "Done!!!" <<endl;
+    //end = clock(); //计时结束
+	//cout << "Done!!!" <<endl;
     
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    printf("Done in %.2lf seconds.\n", elapsed_secs);
-    cout << "=============================\n" << endl;
+	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    //printf("Done in %.2lf seconds.\n", elapsed_secs);
+    //cout << "=============================\n" << endl;
     
 	return wrapped_phase;
 }
@@ -119,7 +157,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
 	// 相位序列
-	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
+	const char * series_phase_txt = "../data/output/series_phase_model1.txt";
 
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);
@@ -142,18 +180,9 @@ void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images
 
 }
 
-/***********************************************************************
-基于格雷码的展开相位计算，得到表面采样点条纹级次k，绝对相位（展开相位）
-输入：
-	src: 包裹相位
-	Rect_images: 极线校正（立体校正）后的图像
-输出：
-	dst：展开相位
-***********************************************************************/
 void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	// 相位序列
-	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
+	const char * series_phase_txt = "../data/output/series_phase.txt";
   
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);
@@ -162,13 +191,11 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 		cout << "can not open " << Rect_images << " or the string list is empty" << endl;
 	}
   
-	// 6张格雷码调制图像和4张相移调制图像
 	if(imagelist.size() != 10)
 	{
 		cout << "the number of images less ten" <<endl;
 	}
   
-	// 读取6张格雷码调制图像
 	Mat img1 = imread(imagelist[0], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img2 = imread(imagelist[1], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img3 = imread(imagelist[2], CV_LOAD_IMAGE_GRAYSCALE);
@@ -176,46 +203,18 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	Mat img5 = imread(imagelist[4], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img6 = imread(imagelist[5], CV_LOAD_IMAGE_GRAYSCALE);
   
-	// 相位序列Mat
 	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
   
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
 
-	//cv::imwrite("../myimages/src6.bmp", img6);
-  
-	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
-	/*
-	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
-	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
-	threshold(img3, img3, thresh, 255, CV_THRESH_BINARY);
-	threshold(img4, img4, thresh, 255, CV_THRESH_BINARY);
-	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
-	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
-	*/
+	threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
+	threshold(img2, img2, thresh, 1, CV_THRESH_BINARY);
+	threshold(img3, img3, thresh, 1, CV_THRESH_BINARY);
+	threshold(img4, img4, thresh, 1, CV_THRESH_BINARY);
+	threshold(img5, img5, thresh, 1, CV_THRESH_BINARY);
+	threshold(img6, img6, thresh, 1, CV_THRESH_BINARY);
 
-	threshold(img1, img1, thresh, 100, CV_THRESH_BINARY);
-	threshold(img2, img2, thresh, 100, CV_THRESH_BINARY);
-	threshold(img3, img3, thresh, 100, CV_THRESH_BINARY);
-	threshold(img4, img4, thresh, 100, CV_THRESH_BINARY);
-	threshold(img5, img5, thresh, 100, CV_THRESH_BINARY);
-	threshold(img6, img6, thresh, 100, CV_THRESH_BINARY);
-
-	/*
-	for (size_t i = 0; i < width; i++)
-	{
-		for (size_t j = 0; j < height; j++)
-		{
-			uchar tt = 0;
-			if(img2.at<uchar>(i, j) > tt)
-			{
-				cout << "not empty image\n";
-			}
-		}
-	}
-	*/
-
-	/*
 	if (showThreshold)
 	{
 		cout << "show threshold" << endl;
@@ -226,24 +225,15 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 			double sf = 640. / MAX(imgshow.rows, imgshow.cols);
 			resize(imgshow, imgshow, Size(), sf, sf); //调整图像大小640 x 640
 
-			// imshow("imgshow", imgshow);
-			cv::imwrite("../myimages/imgshow.bmp", imgshow);
+			imshow("imgshow", imgshow);
 		}
 	}
-	*/
 
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
 	bitwise_xor(img3, img4, img4);
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
-
-	cv::imwrite("../myimages/bin1.bmp", img1);
-	cv::imwrite("../myimages/bin2.bmp", img2);
-	cv::imwrite("../myimages/bin3.bmp", img3);
-	cv::imwrite("../myimages/bin4.bmp", img4);
-	cv::imwrite("../myimages/bin5.bmp", img5);
-	cv::imwrite("../myimages/bin6.bmp", img6);
 
 #if 1
 	int x,y;
@@ -268,15 +258,12 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 		}
 	}
   
-	// medianBlur(phase_series, phase_series, 9); //中值滤波
+	medianBlur(phase_series, phase_series, 9); //中值滤波
 
-	//cv::imwrite("../myimages/phase_series.bmp", phase_series);
-  
 	for(y=0; y < height; y++)
 	{
 		for(x=0; x < width; x++)
 		{
-			//绝对相位 = 2*PI*k + wrappedphase(x,y)（相对相位/相位主体）
 			dst.at<float>(y,x) = phase_series.at<uchar>(y,x)*2*CV_PI + src.at<float>(y,x);
 #if 0     
 			if(x!=0)

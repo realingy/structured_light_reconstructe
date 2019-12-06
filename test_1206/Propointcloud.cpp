@@ -1,7 +1,7 @@
 #include "Propointcloud.h"
 
-const char* pnts3D_pcdfilename = "../mydata/output/pnts3D_pcd.pcd";
-const char* pnts3D_filtered_pcdfilename = "../mydata/output/pnts3D_pcd_filtered.pcd";
+const char* pnts3D_pcdfilename = "../data/output/pnts3D_pcd.pcd";
+const char* pnts3D_filtered_pcdfilename = "../data/output/pnts3D_pcd_filtered.pcd";
  
 void savepntsPCD(cv::Mat& pnts)
 {
@@ -112,9 +112,9 @@ void filterpointcloud(void)
 	mls.setSearchRadius(0.003);
 	mls.process(mls_points);
   
-	pcl::io::savePCDFileASCII("../mydata/output/mls_points.pcd", mls_points);
+	pcl::io::savePCDFileASCII("../data/output/mls_points.pcd", mls_points);
 
-	reader.read("../mydata/output/mls_points.pcd", *cloud_res);
+	reader.read("../data/output/mls_points.pcd", *cloud_res);
   
 	/***********************Surface Reconstruction****************************************/
  
@@ -187,8 +187,8 @@ void poissonreconstruction(void)
   
 	mls.process(mls_points);
   
-	pcl::io::savePCDFileASCII("../mydata/output/mls_points.pcd", mls_points);  
-	reader.read("../mydata/output/mls_points.pcd", *mls_cloud);
+	pcl::io::savePCDFileASCII("../data/output/mls_points.pcd", mls_points);  
+	reader.read("../data/output/mls_points.pcd", *mls_cloud);
 
 	cout << "===> " << mls_cloud->points.size() << endl;
   
