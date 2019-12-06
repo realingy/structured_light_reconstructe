@@ -108,17 +108,9 @@ int main(int argc, char **argv)
 		
 	cv::normalize(wrapped_phase_right, wrapped_phase_right, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_right);
-	cv::normalize(unwrapped_phase_right, unwrapped_phase_right, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
-
-	/*
-	Mat phase_left = unwrapped_phase_left.clone();
-	cv::normalize(unwrapped_phase_right, phase_left, 0, 255);
-	Mat phase_right = unwrapped_phase_right.clone();
-	cv::normalize(unwrapped_phase_right, phase_right, 0, 255);
-	*/
 #endif
-   
+ 
 #if 0
 	// stereo matching and 3D reconstruction
     const char* pnts3D_filename = "../data/output/pnts3D.txt";
@@ -145,7 +137,6 @@ int main(int argc, char **argv)
 
 	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
     
-    cout << "\n=============================" << endl;
     cout << "Calculate points3D......"<<endl;
     cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
     
@@ -156,12 +147,9 @@ int main(int argc, char **argv)
 
 #if 0
 	// surface reconstruction
-    cout << "\n=============================" << endl;
 	cout << "surface reconstruction......" <<endl;
-	// filterpointcloud();
-	poissonreconstruction(); // 泊松曲面重建
-    
-	cout << "All Done......" <<endl;
+	filterpointcloud();
+	//poissonreconstruction(); // 泊松曲面重建
 #endif
     
     return 0;

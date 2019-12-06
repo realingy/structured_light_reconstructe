@@ -3,8 +3,6 @@
 using namespace cv;
 using namespace std;
 
-// 相机立体标定
-
 #define CORNER_COLS  7
 #define CORNER_ROWS  6
 bool displayCorners = true;   //可视化角点
@@ -23,7 +21,6 @@ bool readStringList( const string& filename, vector<string>& l)
         l.push_back((string)*it);
     return true;
 }
-
 
 static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated,
 			bool showRectified, const string &storintrinsicsyml, const string &storextrinsicsyml)
