@@ -5,23 +5,30 @@
 using namespace cv;
 using namespace std;
 
-#if 1
+#if 0
 const int gWidth = 1600;
 const int gHeight = 1200;
 
 // 三频率, 决定正弦函数的周期
 int freq[] = { 100, 94.75, 90.5 };
+// int freq[] = { 70, 64, 59 };
 
 // 存储3组共计18张图(三个频率，六个相位)
 Mat image[3][6];
 
-// 生成3组共计12张pattern图(三个频率，四个相位)
+// 生成3组共计18张pattern图(三个频率，六个相位)
 Mat pattern[3][6];
 
 // 相位主值（包裹相位）图像
 Mat imageWrappedPhase[3];
 
-// 利用余弦函数生成12张pattern图
+// 加载条纹调制图像
+void LoadImage(bool vertical)
+{
+
+}
+
+// 利用余弦函数生成张pattern图
 void PasheShiftPatternGenerator(bool vertical)
 {
 	cout << "\n============================================================================" << endl;
@@ -91,33 +98,33 @@ void CalImageWrappedPhase()
 				float I5 = phase3.at<float>(i, j);
 				float I6 = phase4.at<float>(i, j);
 
-				if (2*I4 == I2 + I6 && 2*I3 > I1 + I5 ) // 四个特殊位置
+				if (I2+I6 == 2*I4 && 2*I3 > I1 + I5 )
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 0;
 				}
-				else if (2*I4 == I2 + I6 && 2*I3 < I1 + I5 ) // 四个特殊位置
+				else if (I2+I6 == 2*I4 && 2*I3 < I1 + I5 )
 				{
 					imageWrappedPhase[n].at<float>(i,j) = CV_PI;
 				}
-				else if (2*I4 > I2 + I6 && 2*I3 == I1 + I5 ) // 四个特殊位置
+				else if (I2+I6 > 2*I4 && 2*I3 == I1 + I5 )
 				{
 					imageWrappedPhase[n].at<float>(i,j) = CV_PI / 2;
 				}
-				else if (2*I4 < I2 + I6 && 2*I3 == I1 + I5 ) // 四个特殊位置
+				else if (I2+I6 < 2*I4 && 2*I3 == I1 + I5 )
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 3 * CV_PI / 2;
 				}
 				else if ( 2*I3 < I1+I5 ) //第二、三象限
 				{
-					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) ) + CV_PI;
+					imageWrappedPhase[n].at<float>(i,j) = atan( (I2 + I6 - 2*I4) / (2*I3 - I1 - I5) ) + CV_PI;
 				}
-				else if ( 2*I3 > I1+I5 && 2*I4 > I2+I6) //第一象限
+				else if ( 2*I3 > I1+I5 && I2+I6 > 2*I4) //第一象限
 				{
-					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) );
+					imageWrappedPhase[n].at<float>(i,j) = atan( (I2 + I6 - 2*I4) / (2*I3 - I1 - I5) );
 				}
-				else if (I1 > I3&& I4 < I2) //第一象限
+				else if ( 2*I3 > I1+I5 && I2+I6 < 2*I4) //第四象限
 				{
-					imageWrappedPhase[n].at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2*CV_PI;
+					imageWrappedPhase[n].at<float>(i,j) = atan( (I2 + I6 - 2*I4) / (2*I3 - I1 - I5) ) + 2*CV_PI;
 				}
 			}
 		}
@@ -269,8 +276,8 @@ void decMultiPhase5(Mat *imgShift, Mat &imgAbsPhase)
 int main()
 {
 	PasheShiftPatternGenerator(true); //生成pattern
-	// CalImageWrappedPhase(); // 包裹相位计算
-	// CalPhaseDifference(); // 解包裹相位（相位展开）
+	CalImageWrappedPhase(); // 包裹相位计算
+	CalPhaseDifference(); // 解包裹相位（相位展开）
 
 	return 0;
 }

@@ -5,15 +5,17 @@
 using namespace cv;
 using namespace std;
 
-#if 0
+#if 1
 //const int gHeight = 1280;
 //const int gWidth = 768;
-const int gWidth = 1280;
-const int gHeight = 720;
-
+//const int gWidth = 1280;
+//const int gHeight = 720;
+const int gWidth = 1600;
+const int gHeight = 1200;
 
 // 三频率, 决定正弦函数的周期
-int freq[] = { 70, 64, 59 };
+//int freq[] = { 70, 64, 59 };
+int freq[] = { 100, 94.75, 90.5 };
 
 // 存储3组共计12张图(三个频率，四个相位)
 Mat image[3][4];
@@ -113,7 +115,7 @@ void CalImageWrappedPhase()
 				{
 					imageWrappedPhase[n].at<float>(i,j) = atan( (I4 - I2) / (I1 - I3) );
 				}
-				else if (I1 > I3&& I4 < I2) //第一象限
+				else if (I1 > I3&& I4 < I2) //第四象限
 				{
 					imageWrappedPhase[n].at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2*CV_PI;
 				}
