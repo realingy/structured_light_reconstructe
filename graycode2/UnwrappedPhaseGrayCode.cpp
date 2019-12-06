@@ -1,8 +1,8 @@
 #include "UnwrappedPhaseGrayCode.h"
 
-#define TEST
+// #define TEST
 
-#ifdef TEST
+#ifndef TEST
 const int gWidth = 1280;
 const int gHeight = 720;
 #else

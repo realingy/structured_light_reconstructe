@@ -10,8 +10,8 @@
 using namespace cv;
 using namespace std;
 
-#define PHASE_THRESHOLD  0.01  // model20 0.01(singlematch) model1 0.01 //相位阈值
-#define BLOCK_THRESHOLD  0.3   // Block阈值
+#define PHASE_THRESHOLD  0.01
+#define BLOCK_THRESHOLD  0.3
 
 static void savePhase(const char* filename, Mat& mat);
 static void savepnts3D(const char* filename,  Mat& mat);
@@ -23,15 +23,15 @@ void find_featureSAD(Mat& leftphase, Mat& rightphase);
 void find_featureBlock(Mat& leftphase, Mat& rightphase, 
                        vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint);
 
-const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
-const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
+const string storintrinsicsyml  = "../data/output/intrinsics.yml"; //相机内参
+const string storextrinsicsyml  = "../data/output/extrinsics.yml"; //相机外参
 
 int main(int argc, char **argv) 
 {
 /***********************Stereo Calibration*****************************************/
 /***********************相机立体标定*****************************************/
 #if 0
-	const string Calibimagelistfn = "../mydata/input/stereo_calib_images.xml";  
+	const string Calibimagelistfn = "../data/input/stereo_calib_images.xml";  
      
 	cout << "Stereo Calibration......" <<endl;
      
@@ -44,37 +44,35 @@ int main(int argc, char **argv)
     
 	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
 	printf("Done in %.2lf seconds.\n", elapsed_secs);
-
 #endif
 
 #if 0
-	// 图像校正......
-	const string Phaseimageslistfn  = "../mydata/input/phase_images.xml";
-	const string Rectifiedimageslistfn = "../mydata/input/Rect_phase_images.xml";
+	// 立体校正
+	const string Phaseimages = "../data/input/phase_images.xml";
+	const string Rectifiedimages = "../data/input/Rect_phase_images.xml";
      
-	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
+	// 根据内外惨进行校正
+	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimages, Rectifiedimages);
 #endif
 
 #if 1
-	// Calculate unwrapped phase
-	// 计算解包相位
-    const char* wrapped_phaseleft_txt = "../mydata/output/wrapped_phase_left.txt";
-    const char* wrapped_phaseright_txt = "../mydata/output/wrapped_phase_right.txt";
-    const char* unwrapped_phaseleft_txt = "../mydata/output/unwrapped_phase_left.txt";
-    const char* unwrapped_phaseright_txt = "../mydata/output/unwrapped_phase_right.txt";
-    const char* Rect_images_left = "../mydata/input/Rect_images_left.xml";
-    const char* Rect_images_right = "../mydata/input/Rect_images_right.xml";
+    const char* wrapped_phaseleft_txt = "../data/output/wrapped_phase_left.txt";
+    const char* wrapped_phaseright_txt = "../data/output/wrapped_phase_right.txt";
+    const char* unwrapped_phaseleft_txt = "../data/output/unwrapped_phase_left.txt";
+    const char* unwrapped_phaseright_txt = "../data/output/unwrapped_phase_right.txt";
+
+    const char* Rect_images_left = "../data/input/Rect_images_left.xml";   //左图列表
+    const char* Rect_images_right = "../data/input/Rect_images_right.xml"; //右图列表
     
-	/***********************Calculate left phase*****************************************/
-	/***********************计算左相位*****************************************/
-	// 计算左图的包裹相位
+	cout << "\========================================================================\n";
+	cout << "Process Left Image: \n";
     Mat wrapped_phase_left = CalWrappedPhase(Rect_images_left).clone();
 
     if(wrapped_phaseleft_txt)
     {
-		// 存储左图的包裹相位
-		printf("storing the wrapped_phaseleft_txt...\n");
-		savePhase(wrapped_phaseleft_txt, wrapped_phase_left);
+		printf("\nstoring the wrapped_phaseleft_txt...\n");
+		savePhase(wrapped_phaseleft_txt, wrapped_phase_left); //保存相位
+		cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left); //保存图像
     }
     cout << "Done!!!" <<endl;
 
@@ -82,58 +80,67 @@ int main(int argc, char **argv)
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
     cout << "Phase unwrapping......" <<endl;
 
-	// 格雷码解码方式计算展开相位
+	// 格雷码方式
     UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
-	// 古典算法计算展开相位
+
+	// 古典方式
 	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
-    
     cout << "Done!!!" <<endl;
 
+	// cv::normalize(unwrapped_phase_left, unwrapped_phase_left, 0, 255);
     if(unwrapped_phaseleft_txt)
     {
-      printf("storing the unwrapped_phaseleft_txt...");
-      savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
+		printf("\nstoring the unwrapped_phaseleft_txt...");
+		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
+		cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
     }
     cout << "Done!!!" <<endl;
     
-    
-	/*************************Calculate right phase***********************************/
-	/***********************计算右相位*****************************************/
+	/*
+	cout << "\========================================================================\n";
+	cout << "Process Right Image: \n";
     Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
     Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));  // warning SIZE(cols,rows)!!!
       
     if(wrapped_phaseright_txt)
     {
-      printf("storing the wrapped_phaseright_txt...");
-      savePhase(wrapped_phaseright_txt, wrapped_phase_right);
+		printf("storing the wrapped_phaseright_txt...");
+		savePhase(wrapped_phaseright_txt, wrapped_phase_right);
+		cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_left); //保存图像
     }
     cout << "Done!!!" <<endl;
     
     cout << "Phase unwrapping......" <<endl;
-   
     UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
  //   UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
-    
     cout << "Done!!!" <<endl;
+
+	// cv::normalize(unwrapped_phase_right, unwrapped_phase_right, 0, 255);
     if(unwrapped_phaseright_txt)
     {
 		printf("storing the unwrapped_phaseright_txt...");
 		savePhase(unwrapped_phaseright_txt, unwrapped_phase_right);
+		cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
     }
     cout << "Done!!!" <<endl;
+	*/
 
-	//imwrite("../mydata/filterphaseright.jpg", filterphase);
-	imwrite("../myimages/unwrapped_phase_left.jpg", unwrapped_phase_left);
-	imwrite("../myimages/unwrapped_phase_right.jpg", unwrapped_phase_right);
+	//imwrite("../data/filterphaseright.jpg", filterphase);
+	/*
+	Mat phase_left = unwrapped_phase_left.clone();
+	cv::normalize(unwrapped_phase_right, phase_left, 0, 255);
+	Mat phase_right = unwrapped_phase_right.clone();
+	cv::normalize(unwrapped_phase_right, phase_right, 0, 255);
+	*/
 	//imshow("filter_phase", unwrapped_phase_right);
     //waitKey(0);
     
 #endif
    
 	/***********************立体匹配和三维重建*****************************************/
-#if 1
+#if 0
 	// stereo matching and 3D reconstruction
-    const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
+    const char* pnts3D_filename = "../data/output/pnts3D.txt";
     
     FileStorage fs(storextrinsicsyml, FileStorage::READ);
     if(!fs.isOpened())
@@ -169,11 +176,11 @@ int main(int argc, char **argv)
 
 	/*********************surface reconstruction************************************/
 	/*********************表面重建*******************************/
-#if 1  // surface reconstruction
+#if 0  // surface reconstruction
     cout << "\n=============================" << endl;
 	cout << "surface reconstruction......" <<endl;
 	// filterpointcloud();
-	// poissonreconstruction(); // 泊松曲面重建
+	poissonreconstruction(); // 泊松曲面重建
     
 	cout << "All Done......" <<endl;
 #endif
@@ -433,7 +440,7 @@ static void savepnts3D(const char* filename, Mat& mat)
     float *pnts3D_row3 = mat.ptr<float>(2);
     float *pnts3D_row4 = mat.ptr<float>(3);
     int i, j, pixelsvel; 
-    
+
     for(int y = 0; y < mat.cols; y++)
     {
       float pnts3D_data4 = *(pnts3D_row4 + y);
@@ -451,8 +458,9 @@ static void savepnts3D(const char* filename, Mat& mat)
       if( i < pnts3Dimg.cols && j < pnts3Dimg.rows && pixelsvel < 255)
          pnts3Dimg.at<uchar>(j, i) = pixelsvel;
     }
-    imwrite("../mydata/output/pnts3D.jpg", pnts3Dimg);
+    imwrite("../data/output/pnts3D.jpg", pnts3Dimg);
     fclose(fp);
+
 }
 
 

@@ -45,6 +45,7 @@ void savepntsPCD(cv::Mat& pnts)
   
   pcl::io::savePCDFileASCII(pnts3D_pcdfilename, cloud);
   
+  cout << "=================================\n";
 
   
 //   pcl::PointCloud<pcl::PointXYZ>::Ptr viewcloud;

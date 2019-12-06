@@ -31,7 +31,6 @@ Mat CalWrappedPhase(const std::string &Rect_images)
         cout << "can not open " << Rect_images << " or the string list is empty" << endl;
     }
 
-	// 6张格雷码调制图像+4张相移调制图像
     if(imagelist.size() != 10)
     {
 		cout << "the number of images less ten" <<endl;
@@ -186,12 +185,21 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	//cv::imwrite("../myimages/src6.bmp", img6);
   
 	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
+	/*
 	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
 	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
 	threshold(img3, img3, thresh, 255, CV_THRESH_BINARY);
 	threshold(img4, img4, thresh, 255, CV_THRESH_BINARY);
 	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
 	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
+	*/
+
+	threshold(img1, img1, thresh, 100, CV_THRESH_BINARY);
+	threshold(img2, img2, thresh, 100, CV_THRESH_BINARY);
+	threshold(img3, img3, thresh, 100, CV_THRESH_BINARY);
+	threshold(img4, img4, thresh, 100, CV_THRESH_BINARY);
+	threshold(img5, img5, thresh, 100, CV_THRESH_BINARY);
+	threshold(img6, img6, thresh, 100, CV_THRESH_BINARY);
 
 	/*
 	for (size_t i = 0; i < width; i++)
@@ -207,6 +215,7 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	}
 	*/
 
+	/*
 	if (showThreshold)
 	{
 		cout << "show threshold" << endl;
@@ -221,6 +230,7 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 			cv::imwrite("../myimages/imgshow.bmp", imgshow);
 		}
 	}
+	*/
 
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
@@ -258,7 +268,7 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 		}
 	}
   
-	medianBlur(phase_series, phase_series, 9); //中值滤波
+	// medianBlur(phase_series, phase_series, 9); //中值滤波
 
 	//cv::imwrite("../myimages/phase_series.bmp", phase_series);
   
@@ -266,7 +276,7 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	{
 		for(x=0; x < width; x++)
 		{
-			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
+			//绝对相位 = 2*PI*k + wrappedphase(x,y)（相对相位/相位主体）
 			dst.at<float>(y,x) = phase_series.at<uchar>(y,x)*2*CV_PI + src.at<float>(y,x);
 #if 0     
 			if(x!=0)
