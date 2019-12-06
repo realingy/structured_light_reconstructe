@@ -6,6 +6,9 @@
 #include <time.h>
 #include "CameraCalib.h"
 
+const int gHeight = 1600;
+const int gWidth = 1200;
+
 cv::Mat CalWrappedPhase(const std::string &Rect_images);
 
 void UnwrappedPhaseClassicMethod(cv::Mat& src, cv::Mat& dst);

@@ -23,35 +23,32 @@ void find_featureSAD(Mat& leftphase, Mat& rightphase);
 void find_featureBlock(Mat& leftphase, Mat& rightphase, 
                        vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint);
 
-const string storintrinsicsyml  = "../data/output/intrinsics.yml"; //相机内参
-const string storextrinsicsyml  = "../data/output/extrinsics.yml"; //相机外参
+const string storintrinsicsyml  = "../data/output/intrinsics.yml";
+const string storextrinsicsyml  = "../data/output/extrinsics.yml";
 
 int main(int argc, char **argv) 
 {
 /***********************Stereo Calibration*****************************************/
-/***********************相机立体标定*****************************************/
 #if 0
 	const string Calibimagelistfn = "../data/input/stereo_calib_images.xml";  
      
 	cout << "Stereo Calibration......" <<endl;
      
-	clock_t start=0, end=0;
-	start = clock();  //开始计时     
+	//clock_t start=0, end=0;
+	//start = clock();  //开始计时     
      
 	StereoCalibration(Calibimagelistfn, storintrinsicsyml, storextrinsicsyml);
      
-	end = clock(); //计时结束
+	//end = clock(); //计时结束
     
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-	printf("Done in %.2lf seconds.\n", elapsed_secs);
+	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	//printf("Done in %.2lf seconds.\n", elapsed_secs);
 #endif
 
 #if 0
-	// 立体校正
 	const string Phaseimages = "../data/input/phase_images.xml";
 	const string Rectifiedimages = "../data/input/Rect_phase_images.xml";
      
-	// 根据内外惨进行校正
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimages, Rectifiedimages);
 #endif
 
@@ -61,81 +58,67 @@ int main(int argc, char **argv)
     const char* unwrapped_phaseleft_txt = "../data/output/unwrapped_phase_left.txt";
     const char* unwrapped_phaseright_txt = "../data/output/unwrapped_phase_right.txt";
 
-    const char* Rect_images_left = "../data/input/Rect_images_left.xml";   //左图列表
-    const char* Rect_images_right = "../data/input/Rect_images_right.xml"; //右图列表
+    const char* Rect_images_left = "../data/input/Rect_images_left.xml";
+    const char* Rect_images_right = "../data/input/Rect_images_right.xml";
     
-	cout << "\========================================================================\n";
-	cout << "Process Left Image: \n";
+	cout << endl << "Process Left Image: \n";
     Mat wrapped_phase_left = CalWrappedPhase(Rect_images_left).clone();
 
     if(wrapped_phaseleft_txt)
     {
-		printf("\nstoring the wrapped_phaseleft_txt...\n");
+		printf("storing the wrapped_phaseleft_txt...\n");
 		savePhase(wrapped_phaseleft_txt, wrapped_phase_left); //保存相位
     }
-    cout << "Done!!!" <<endl;
 
     cout << "Phase unwrapping......" <<endl;
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
+	Mat series_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
     UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
 	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
-    cout << "Done!!!" <<endl;
 
-	// cv::normalize(unwrapped_phase_left, unwrapped_phase_left, 0, 255);
     if(unwrapped_phaseleft_txt)
     {
 		printf("\nstoring the unwrapped_phaseleft_txt...");
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
     }
-    cout << "Done!!!" <<endl;
 
 	cv::normalize(wrapped_phase_left, wrapped_phase_left, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left);
 	cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
 
-    
-	/*
-	cout << "\========================================================================\n";
-	cout << "Process Right Image: \n";
+	cout << endl << endl << "Process Right Image: \n";
     Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
-    Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));  // warning SIZE(cols,rows)!!!
+    Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));
       
     if(wrapped_phaseright_txt)
     {
-		printf("storing the wrapped_phaseright_txt...");
+		printf("storing the wrapped_phaseright_txt...\n");
 		savePhase(wrapped_phaseright_txt, wrapped_phase_right);
-		cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_left); //保存图像
     }
-    cout << "Done!!!" <<endl;
     
     cout << "Phase unwrapping......" <<endl;
     UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
- //   UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
-    cout << "Done!!!" <<endl;
+	// UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
 
-	// cv::normalize(unwrapped_phase_right, unwrapped_phase_right, 0, 255);
     if(unwrapped_phaseright_txt)
     {
-		printf("storing the unwrapped_phaseright_txt...");
+		printf("\nstoring the unwrapped_phaseright_txt...\n");
 		savePhase(unwrapped_phaseright_txt, unwrapped_phase_right);
-		cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
     }
-    cout << "Done!!!" <<endl;
-	*/
+		
+	cv::normalize(wrapped_phase_right, wrapped_phase_right, 0, 255, NORM_MINMAX);
+	cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_right);
+	cv::normalize(unwrapped_phase_right, unwrapped_phase_right, 0, 255, NORM_MINMAX);
+	cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
 
-	//imwrite("../data/filterphaseright.jpg", filterphase);
 	/*
 	Mat phase_left = unwrapped_phase_left.clone();
 	cv::normalize(unwrapped_phase_right, phase_left, 0, 255);
 	Mat phase_right = unwrapped_phase_right.clone();
 	cv::normalize(unwrapped_phase_right, phase_right, 0, 255);
 	*/
-	//imshow("filter_phase", unwrapped_phase_right);
-    //waitKey(0);
-    
 #endif
    
-	/***********************立体匹配和三维重建*****************************************/
 #if 0
 	// stereo matching and 3D reconstruction
     const char* pnts3D_filename = "../data/output/pnts3D.txt";
@@ -146,16 +129,15 @@ int main(int argc, char **argv)
 		printf("Failed to open file extrinsics_filename.\n");
 		return 0;
     }
+
     Mat P1, P2;
     fs["P1"] >> P1;
     fs["P2"] >> P2;
     
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
-    cout << "\n=============================" << endl;
     cout << "Calculate feature points......"<<endl;
     
     find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
-    
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
     
@@ -172,9 +154,8 @@ int main(int argc, char **argv)
     savepntsPCD(pnts3D);
 #endif    
 
-	/*********************surface reconstruction************************************/
-	/*********************表面重建*******************************/
-#if 0  // surface reconstruction
+#if 0
+	// surface reconstruction
     cout << "\n=============================" << endl;
 	cout << "surface reconstruction......" <<endl;
 	// filterpointcloud();

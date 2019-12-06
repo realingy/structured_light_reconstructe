@@ -146,41 +146,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 	}
 }
 
-/***********************************************************************
-基于多频外差的展开相位计算，得到表面采样点条纹级次k，和绝对相位（展开相位）
-输入：
-	src: 包裹相位
-	Rect_images: 极线校正（立体校正）后的图像
-输出：
-	dst：展开相位
-***********************************************************************/
-void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
-{
-	// 相位序列
-	const char * series_phase_txt = "../data/output/series_phase_model1.txt";
-
-	vector<string> imagelist;
-	bool ok = readString(Rect_images, imagelist);
-	if(!ok || imagelist.empty())
-	{
-		cout << "can not open " << Rect_images << " or the string list is empty" << endl;
-	}
-  
-	// 3张多频调制图像和4张相移调制图像
-	if(imagelist.size() != 10)
-	{
-		cout << "the number of images less ten" <<endl;
-	}
-
-	// 读取3张多频调制图像
-	Mat img1 = imread(imagelist[0], CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img2 = imread(imagelist[1], CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img3 = imread(imagelist[2], CV_LOAD_IMAGE_GRAYSCALE);
-
-
-}
-
-void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
+void UnwrappedPhaseGraycodeMethod(cv::Mat& src, cv::Mat& dst, const std::string &Rect_images)
 {
 	const char * series_phase_txt = "../data/output/series_phase.txt";
   
@@ -223,7 +189,7 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 			Mat imgshow = imread(imagelist[k], CV_LOAD_IMAGE_GRAYSCALE);
 			threshold(imgshow, imgshow, thresh, 255, CV_THRESH_BINARY);
 			double sf = 640. / MAX(imgshow.rows, imgshow.cols);
-			resize(imgshow, imgshow, Size(), sf, sf); //调整图像大小640 x 640
+			resize(imgshow, imgshow, Size(), sf, sf);
 
 			imshow("imgshow", imgshow);
 		}
@@ -252,9 +218,12 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
     
 		for (x = 0; x < width; x++)
 		{
-			phase_series.at<uchar>(y,x) = ((int)(*img1_ptr++))*32 + ((int)(*img2_ptr++))*16
-												+ ((int)(*img3_ptr++))*8 + ((int)(*img4_ptr++))*4 
-												+ ((int)(*img5_ptr++))*2 + ((int)(*img6_ptr++))*1; 
+			phase_series.at<uchar>(y,x) = ((int)(*img1_ptr++))*32
+											+ ((int)(*img2_ptr++))*16
+											+ ((int)(*img3_ptr++))*8
+											+ ((int)(*img4_ptr++))*4 
+											+ ((int)(*img5_ptr++))*2
+											+ ((int)(*img6_ptr++))*1; 
 		}
 	}
   
@@ -293,6 +262,25 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 		}
 	}
 #endif
+
+	if(series_phase_txt)
+	{
+		printf("storing the series_phase_txt...");
+		FILE* fp = fopen(series_phase_txt, "wt");
+    
+		for(int y = 0; y < phase_series.rows; y++)
+		{
+			uchar *pixel_phase_data = phase_series.ptr<uchar>(y);
+	
+			for(int x = 0; x < phase_series.cols; x++)
+			{
+				uchar point = *pixel_phase_data++;
+				fprintf(fp, "%d \t", point);
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
 
 #if 0
 	for(int y=0; y < img1.rows; y++)
@@ -366,24 +354,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 //      }
 //   }
   
-	if(series_phase_txt)
-	{
-		printf("storing the series_phase_txt...");
-		FILE* fp = fopen(series_phase_txt, "wt");
-    
-		for(int y = 0; y < phase_series.rows; y++)
-		{
-			uchar *pixel_phase_data = phase_series.ptr<uchar>(y);
-	
-			for(int x = 0; x < phase_series.cols; x++)
-			{
-				uchar point = *pixel_phase_data++;
-				fprintf(fp, "%d \t", point);
-			}
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
-	}
 }
 
 
