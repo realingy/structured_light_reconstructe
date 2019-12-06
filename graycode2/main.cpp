@@ -25,6 +25,11 @@ const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
 const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
 */
 
+/*
+const int gWidth = 1600;
+const int gHeight = 1200;
+*/
+
 const int gWidth = 1280;
 const int gHeight = 720;
 
@@ -50,6 +55,13 @@ void LoadImage()
 	pattern[1] = imread("pattern/vPhase_1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	pattern[2] = imread("pattern/vPhase_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	pattern[3] = imread("pattern/vPhase_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+
+	/*
+	pattern[0] = imread("image/Image_8.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[1] = imread("image/Image_9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[2] = imread("image/Image_10.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	pattern[3] = imread("image/Image_11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	*/
 
 	/*
 	cout << "\n============================================================================" << endl;
@@ -131,16 +143,40 @@ void CalWrappedPhase()
 	}
 
 	/*
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+		}
+	}
+	*/
+
+	Mat roi1;
+	Mat roi2;
+	for (int j = 0; j < gWidth; j++)
+	{
+		if ((int)imageWrappedPhase.at<float>(0, j) == 0)
+		{
+			roi1 = imageWrappedPhase(Rect(0, 0, j, gHeight));
+			roi2 = imageWrappedPhase(Rect(j, 0, gWidth-j, gHeight));
+			break;
+		}
+	}
+
+	roi2.copyTo(imageWrappedPhase(Rect(0, 0, roi2.cols, gHeight)));
+	//roi1.copyTo(imageWrappedPhase(Rect(roi2.cols, 0, roi1.cols, gHeight)));
+
 	ofstream file("wrapphase1.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
 		{
-			file << imageWrappedPhase[0].at<float>(i, j) << "\t";
+			file << imageWrappedPhase.at<float>(i, j) << "\t";
 		}
 		file << endl;
 	}
 
+	/*
 	ofstream file2("wrapphase2.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
@@ -164,6 +200,15 @@ void CalUnwrappedPhase()
 	img4 = imread("pattern/vGray7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img5 = imread("pattern/vGray9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	img6 = imread("pattern/vGray11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+
+	/*
+	img1 = imread("image/Image_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img2 = imread("image/Image_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img3 = imread("image/Image_4.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img4 = imread("image/Image_5.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img5 = imread("image/Image_6.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	img6 = imread("image/Image_7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	*/
 
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
