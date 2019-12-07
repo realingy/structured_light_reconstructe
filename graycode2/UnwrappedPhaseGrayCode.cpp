@@ -17,7 +17,7 @@ Mat pattern[4];
 Mat image_phase[4];
 
 // 相位主值
-Mat imageWrappedPhase;
+Mat image_wrapped_phase;
 
 // 格雷码图像
 Mat gray_codes[7];
@@ -96,7 +96,7 @@ void CalWrappedPhase()
 	Mat phase4 = image_phase[3];
 
 	// 包裹相位图（每个频率有一个对应的包裹相位图）
-	imageWrappedPhase = Mat(gHeight, gWidth, CV_32F);
+	image_wrapped_phase = Mat(gHeight, gWidth, CV_32F);
 
 	for (int i = 0; i < gHeight; i++)
 	{
@@ -109,31 +109,31 @@ void CalWrappedPhase()
 			
 			if (I4 == I2 && I1 > I3) // 四个特殊位置
 			{
-				imageWrappedPhase.at<float>(i, j) = 0;
+				image_wrapped_phase.at<float>(i, j) = 0;
 			}
 			else if (I4 == I2 && I1 < I3) // 四个特殊位置
 			{
-				imageWrappedPhase.at<float>(i, j) = CV_PI;
+				image_wrapped_phase.at<float>(i, j) = CV_PI;
 			}
 			else if (I4 > I2&& I1 == I3) // 四个特殊位置
 			{
-				imageWrappedPhase.at<float>(i, j) = CV_PI / 2;
+				image_wrapped_phase.at<float>(i, j) = CV_PI / 2;
 			}
 			else if (I4 < I2 && I1 == I3) // 四个特殊位置
 			{
-				imageWrappedPhase.at<float>(i, j) = 3 * CV_PI / 2;
+				image_wrapped_phase.at<float>(i, j) = 3 * CV_PI / 2;
 			}
 			else if (I1 < I3) //第二、三象限
 			{
-				imageWrappedPhase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + CV_PI;
+				image_wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + CV_PI;
 			}
 			else if (I1 > I3&& I4 > I2) //第一象限
 			{
-				imageWrappedPhase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3));
+				image_wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3));
 			}
 			else if (I1 > I3&& I4 < I2) //第四象限
 			{
-				imageWrappedPhase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2 * CV_PI;
+				image_wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2 * CV_PI;
 			}
 		}
 	}
@@ -143,7 +143,7 @@ void CalWrappedPhase()
 	{
 		for (int j = 0; j < gWidth; j++)
 		{
-			file << imageWrappedPhase.at<float>(i, j) << "\t";
+			file << image_wrapped_phase.at<float>(i, j) << "\t";
 		}
 		file << endl;
 	}
@@ -182,7 +182,6 @@ void CalUnwrappedPhase()
 	bitwise_xor(img6, img7, img7);
 
 	// 相位序列Mat
-	// Mat phase_series(gHeight, gWidth, CV_32FC1, Scalar(0.0));
 	Mat phase_series(gHeight, gWidth, CV_8UC1, Scalar(0.0));
 
 	uchar pre_series, cur_series;
@@ -210,8 +209,8 @@ void CalUnwrappedPhase()
 	}
 
 	medianBlur(phase_series, phase_series, 9); //中值滤波
-
-	cv::imwrite("data/phase_series.bmp", phase_series);
+	//cv::normalize(phase_series, phase_series, 0, 255, NORM_MINMAX);
+	//cv::imwrite("data/phase_series.bmp", phase_series);
 
 	ofstream file("data/phase_series.txt");
 	for (int i = 0; i < gHeight; i++)
@@ -229,7 +228,7 @@ void CalUnwrappedPhase()
 	{
 		for (int x = 0; x < gWidth; x++)
 		{
-			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + imageWrappedPhase.at<float>(y, x);
+			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + image_wrapped_phase.at<float>(y, x);
 		}
 	}
 
@@ -239,9 +238,9 @@ void CalUnwrappedPhase()
 	cv::imwrite("data/UnwrappedPhase.bmp", dst);
 
 	// 灰度归一化
-	cv::normalize(imageWrappedPhase, imageWrappedPhase, 0, 255, NORM_MINMAX);
+	cv::normalize(image_wrapped_phase, image_wrapped_phase, 0, 255, NORM_MINMAX);
 	cout << "saving wrapped phase \n";
-	cv::imwrite("data/WrapPhase.bmp", imageWrappedPhase);
+	cv::imwrite("data/WrapPhase.bmp", image_wrapped_phase);
 
 	ofstream file2("data/unwrapphase.txt");
 	for (int i = 0; i < gHeight; i++)
