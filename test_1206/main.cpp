@@ -81,8 +81,10 @@ int main(int argc, char **argv)
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
     }
 
+	//保存图像需要对灰度值进行归一化（0~255）
 	cv::normalize(wrapped_phase_left, wrapped_phase_left, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left);
+	//cv::normalize(unwrapped_phase_left, unwrapped_phase_left, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
 
 	/*
