@@ -10,8 +10,8 @@ const int gWidth = 1600;
 const int gHeight = 1200;
 
 // 三频率, 决定正弦函数的周期
-int freq[] = { 100, 94.75, 90.5 };
 // int freq[] = { 70, 64, 59 };
+int freq[] = { 100, 94, 89 };
 
 // 存储3组共计18张图(三个频率，六个相位)
 Mat image[3][6];
@@ -91,12 +91,12 @@ void CalImageWrappedPhase()
 		{
 			for (int j = 0; j < gWidth; j++)
 			{
-				float I1 = phase1.at<float>(i, j);
-				float I2 = phase2.at<float>(i, j);
-				float I3 = phase3.at<float>(i, j);
-				float I4 = phase4.at<float>(i, j);
-				float I5 = phase3.at<float>(i, j);
-				float I6 = phase4.at<float>(i, j);
+				float I1 = phase3.at<float>(i, j);
+				float I2 = phase4.at<float>(i, j);
+				float I3 = phase5.at<float>(i, j);
+				float I4 = phase6.at<float>(i, j);
+				float I5 = phase1.at<float>(i, j);
+				float I6 = phase2.at<float>(i, j);
 
 				if (I2+I6 == 2*I4 && 2*I3 > I1 + I5 )
 				{
@@ -131,7 +131,7 @@ void CalImageWrappedPhase()
 	}
 
 	/*
-	ofstream file("wrapphase1.txt");
+	ofstream file("output/wrapphase1.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -141,7 +141,7 @@ void CalImageWrappedPhase()
 		file << endl;
 	}
 
-	ofstream file2("wrapphase2.txt");
+	ofstream file2("output/wrapphase2.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -149,6 +149,16 @@ void CalImageWrappedPhase()
 			file2 << imageWrappedPhase[1].at<float>(i, j) << "\t";
 		}
 		file2 << endl;
+	}
+
+	ofstream file3("output/wrapphase3.txt");
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			file3 << imageWrappedPhase[2].at<float>(i, j) << "\t";
+		}
+		file3 << endl;
 	}
 	*/
 }

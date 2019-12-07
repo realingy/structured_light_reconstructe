@@ -5,7 +5,7 @@
 using namespace cv;
 using namespace std;
 
-#if 1
+#if 0
 //const int gHeight = 1280;
 //const int gWidth = 768;
 //const int gWidth = 1280;
@@ -14,8 +14,9 @@ const int gWidth = 1600;
 const int gHeight = 1200;
 
 // 三频率, 决定正弦函数的周期
-//int freq[] = { 70, 64, 59 };
-int freq[] = { 100, 94.75, 90.5 };
+// int freq[] = { 70, 64, 59 };
+// int freq[] = { 100, 94.75, 90.5 };
+int freq[] = { 100, 94, 89 };
 
 // 存储3组共计12张图(三个频率，四个相位)
 Mat image[3][4];
@@ -40,7 +41,8 @@ void PasheShiftPatternGenerator(bool vertical)
 			for (int r = 0; r < gHeight; r++) {
 				float* ptr = pattern[i][j].ptr<float>(r);
 				for (int l = 0; l < gWidth; l++) {
-					ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * freq[i] / gWidth + j * CV_PI / 2);
+					// ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * freq[i] / gWidth + j * CV_PI / 2);
+					ptr[l] = 127.0 * (sin(2 * CV_PI * l * freq[i] / gWidth + j * CV_PI / 2) + 1);
 				}
 			}
 
@@ -85,10 +87,10 @@ void CalImageWrappedPhase()
 		{
 			for (int j = 0; j < gWidth; j++)
 			{
-				float I1 = phase1.at<float>(i, j);
-				float I2 = phase2.at<float>(i, j);
-				float I3 = phase3.at<float>(i, j);
-				float I4 = phase4.at<float>(i, j);
+				float I1 = phase2.at<float>(i, j);
+				float I2 = phase3.at<float>(i, j);
+				float I3 = phase4.at<float>(i, j);
+				float I4 = phase1.at<float>(i, j);
 
 				//(I4-I2)/(I1-I3)
 				if (I4 == I2 && I1 > I3 ) // 四个特殊位置
@@ -124,7 +126,21 @@ void CalImageWrappedPhase()
 	}
 
 	/*
-	ofstream file("wrapphase1.txt");
+	int series[3] = { 0 };
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < gWidth; j++) {
+			if (imageWrappedPhase[i].at<float>(0, j) == 0.0)
+				series[i]++;
+		}
+	}
+
+	for (int i = 0; i < 3; i++) {
+		cout << "第" << i << "个主相位包含" << series[i] << "个级次\n";
+	}
+	*/
+
+	/*
+	ofstream file("output/wrapphase1.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -134,7 +150,7 @@ void CalImageWrappedPhase()
 		file << endl;
 	}
 
-	ofstream file2("wrapphase2.txt");
+	ofstream file2("output/wrapphase2.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -142,6 +158,16 @@ void CalImageWrappedPhase()
 			file2 << imageWrappedPhase[1].at<float>(i, j) << "\t";
 		}
 		file2 << endl;
+	}
+
+	ofstream file3("output/wrapphase3.txt");
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 0; j < gWidth; j++)
+		{
+			file3 << imageWrappedPhase[2].at<float>(i, j) << "\t";
+		}
+		file3 << endl;
 	}
 	*/
 }
@@ -223,7 +249,7 @@ void CalPhaseDifference()
 /*
 // 输入：包裹相位
 // 输出：绝对相位（展开相位）
-void decMultiPhase5(Mat *imgShift, Mat &imgAbsPhase)
+void decMultiPhase(Mat *imgShift, Mat &imgAbsPhase)
 {
 	//获取包裹相位
 	float * dPtr  = (float *)imgAbsPhase.data;
