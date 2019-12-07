@@ -10,6 +10,8 @@
 using namespace cv;
 using namespace std;
 
+const int gray_bit = 6;
+
 void PhaseShiftPatternGenerate(int freq);
 
 void LoadImage();

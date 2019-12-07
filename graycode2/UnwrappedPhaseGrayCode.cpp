@@ -191,21 +191,25 @@ void CalUnwrappedPhase()
 	{
 		for (int x = 0; x < gWidth; x++)
 		{
-			phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 32
-											+ img2.at<uchar>(y, x) * 16
-											+ img3.at<uchar>(y, x) * 8
-											+ img4.at<uchar>(y, x) * 4
-											+ img5.at<uchar>(y, x) * 2
-											+ img6.at<uchar>(y, x) * 1;
-			/*
-			phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 64
-											+ img2.at<uchar>(y, x) * 32
-											+ img3.at<uchar>(y, x) * 16
-											+ img4.at<uchar>(y, x) * 8
-											+ img5.at<uchar>(y, x) * 4
-											+ img6.at<uchar>(y, x) * 2
-											+ img7.at<uchar>(y, x) * 1;
-			*/
+			if (6 == gray_bit)
+			{
+				phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 32
+												+ img2.at<uchar>(y, x) * 16
+												+ img3.at<uchar>(y, x) * 8
+												+ img4.at<uchar>(y, x) * 4
+												+ img5.at<uchar>(y, x) * 2
+												+ img6.at<uchar>(y, x) * 1;
+			}
+			if (7 == gray_bit)
+			{
+				phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 64
+												+ img2.at<uchar>(y, x) * 32
+												+ img3.at<uchar>(y, x) * 16
+												+ img4.at<uchar>(y, x) * 8
+												+ img5.at<uchar>(y, x) * 4
+												+ img6.at<uchar>(y, x) * 2
+												+ img7.at<uchar>(y, x) * 1;
+			}
 		}
 	}
 
