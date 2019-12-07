@@ -6,8 +6,8 @@
 const int gWidth = 1280;
 const int gHeight = 720;
 #else
-const int gWidth = 1600;
-const int gHeight = 1200;
+const int gWidth = 1292;
+const int gHeight = 964;
 #endif
 
 // 相移编码图像
@@ -25,7 +25,7 @@ Mat gray_codes[6];
 void PhaseShiftPatternGenerate(int freq)
 {
 	cout << "\n============================================================================" << endl;
-	cout << "根据频率生成相位移pattern" << endl;
+	cout << "generate the structured light pattern." << endl;
 	for (int j = 0; j < 4; j++) //四个相位
 	{
 		pattern[j] = Mat(gHeight, gWidth, CV_32F);
@@ -33,7 +33,8 @@ void PhaseShiftPatternGenerate(int freq)
 		for (int r = 0; r < gHeight; r++) {
 			float* ptr = pattern[j].ptr<float>(r);
 			for (int l = 0; l < gWidth; l++) {
-				ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * freq / gWidth + j * CV_PI / 2);
+				//ptr[l] = 128.0 + 127.0 * sin(2 * CV_PI * l * freq / gWidth + j * CV_PI / 2);
+				ptr[l] = 127.0 * (sin(2 * CV_PI * l * freq / gWidth + j * CV_PI / 2) + 1);
 			}
 		}
 
@@ -60,12 +61,12 @@ void LoadImage()
 	gray_codes[4] = imread("pattern/vGray9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	gray_codes[5] = imread("pattern/vGray11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 #else
-	gray_codes[0] = imread("image/Image_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	gray_codes[1] = imread("image/Image_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	gray_codes[2] = imread("image/Image_4.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	gray_codes[3] = imread("image/Image_5.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	gray_codes[4] = imread("image/Image_6.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	gray_codes[5] = imread("image/Image_7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[0] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[1] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[2] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[3] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[4] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[5] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 #endif
 
 	cout << "load phase shift images" << endl;
@@ -75,10 +76,10 @@ void LoadImage()
 	image_phase[2] = imread("pattern/vPhase_2.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	image_phase[3] = imread("pattern/vPhase_3.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 #else
-	image_phase[0] = imread("image/Image_8.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	image_phase[1] = imread("image/Image_9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	image_phase[2] = imread("image/Image_10.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	image_phase[3] = imread("image/Image_11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	image_phase[0] = imread("image/PhaseShiftleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	image_phase[1] = imread("image/PhaseShiftleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	image_phase[2] = imread("image/PhaseShiftleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	image_phase[3] = imread("image/PhaseShiftleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 #endif
 
 }
