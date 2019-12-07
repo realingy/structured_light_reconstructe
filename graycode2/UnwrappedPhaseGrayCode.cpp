@@ -18,6 +18,7 @@ Mat image_phase[4];
 
 // 相位主值
 Mat image_wrapped_phase;
+Mat phase_series;
 
 // 格雷码图像
 Mat gray_codes[7];
@@ -182,7 +183,7 @@ void CalUnwrappedPhase()
 	bitwise_xor(img6, img7, img7);
 
 	// 相位序列Mat
-	Mat phase_series(gHeight, gWidth, CV_8UC1, Scalar(0.0));
+	phase_series = Mat(gHeight, gWidth, CV_8UC1, Scalar(0.0));
 
 	uchar pre_series, cur_series;
 	float pre_unphase, cur_unphase;
@@ -209,8 +210,6 @@ void CalUnwrappedPhase()
 	}
 
 	medianBlur(phase_series, phase_series, 9); //中值滤波
-	//cv::normalize(phase_series, phase_series, 0, 255, NORM_MINMAX);
-	//cv::imwrite("data/phase_series.bmp", phase_series);
 
 	ofstream file("data/phase_series.txt");
 	for (int i = 0; i < gHeight; i++)
@@ -232,15 +231,17 @@ void CalUnwrappedPhase()
 		}
 	}
 
-	// 灰度归一化
-	cv::normalize(dst, dst, 0, 255, NORM_MINMAX);
-	cout << "saving unwrapped phase \n";
-	cv::imwrite("data/UnwrappedPhase.bmp", dst);
-
-	// 灰度归一化
 	cv::normalize(image_wrapped_phase, image_wrapped_phase, 0, 255, NORM_MINMAX);
 	cout << "saving wrapped phase \n";
 	cv::imwrite("data/WrapPhase.bmp", image_wrapped_phase);
+
+	cv::normalize(phase_series, phase_series, 0, 255, NORM_MINMAX);
+	cout << "saving phase series \n";
+	cv::imwrite("data/phase_series.bmp", phase_series);
+
+	cv::normalize(dst, dst, 0, 255, NORM_MINMAX);
+	cout << "saving unwrapped phase \n";
+	cv::imwrite("data/UnwrappedPhase.bmp", dst);
 
 	ofstream file2("data/unwrapphase.txt");
 	for (int i = 0; i < gHeight; i++)
