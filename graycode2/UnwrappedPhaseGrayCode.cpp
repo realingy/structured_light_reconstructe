@@ -100,10 +100,10 @@ void CalWrappedPhase()
 	{
 		for (int j = 0; j < gWidth; j++)
 		{
-			float I1 = (float)phase1.at<uchar>(i, j);
-			float I2 = (float)phase2.at<uchar>(i, j);
-			float I3 = (float)phase3.at<uchar>(i, j);
-			float I4 = (float)phase4.at<uchar>(i, j);
+			float I1 = (float)phase2.at<uchar>(i, j);
+			float I2 = (float)phase3.at<uchar>(i, j);
+			float I3 = (float)phase4.at<uchar>(i, j);
+			float I4 = (float)phase1.at<uchar>(i, j);
 			
 			if (I4 == I2 && I1 > I3) // 四个特殊位置
 			{
@@ -135,20 +135,6 @@ void CalWrappedPhase()
 			}
 		}
 	}
-
-	Mat roi1;
-	Mat roi2;
-	for (int j = 0; j < gWidth; j++)
-	{
-		if ((int)imageWrappedPhase.at<float>(0, j) == 0)
-		{
-			roi1 = imageWrappedPhase(Rect(0, 0, j, gHeight));
-			roi2 = imageWrappedPhase(Rect(j, 0, gWidth-j, gHeight));
-			break;
-		}
-	}
-
-	roi2.copyTo(imageWrappedPhase(Rect(0, 0, roi2.cols, gHeight)));
 
 	ofstream file("data/wrapphase.txt");
 	for (int i = 0; i < gHeight; i++)
