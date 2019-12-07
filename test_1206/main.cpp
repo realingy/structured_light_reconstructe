@@ -35,12 +35,11 @@ int main(int argc, char **argv)
 	cout << "Stereo Calibration......" <<endl;
      
 	//clock_t start=0, end=0;
-	//start = clock();  //开始计时     
+	//start = clock(); //开始计时     
      
 	StereoCalibration(Calibimagelistfn, storintrinsicsyml, storextrinsicsyml);
      
 	//end = clock(); //计时结束
-    
 	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
 	//printf("Done in %.2lf seconds.\n", elapsed_secs);
 #endif
@@ -86,6 +85,7 @@ int main(int argc, char **argv)
 	cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left);
 	cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
 
+	/*
 	cout << endl << endl << "Process Right Image: \n";
     Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
     Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));
@@ -109,6 +109,7 @@ int main(int argc, char **argv)
 	cv::normalize(wrapped_phase_right, wrapped_phase_right, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_right);
 	cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
+	*/
 #endif
  
 #if 0

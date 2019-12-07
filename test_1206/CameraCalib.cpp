@@ -5,7 +5,7 @@ using namespace std;
 
 #define CORNER_COLS  7
 #define CORNER_ROWS  6
-bool displayCorners = true;   //可视化角点
+bool displayCorners = false;   //观察角点
 
 bool readStringList( const string& filename, vector<string>& l)
 {
@@ -35,7 +35,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     const float squareSize = 20.f;  // Set this to your actual square size  正方形大小
     // ARRAY AND VECTOR STORAGE:
 
-    vector<vector<Point2f> > imagePoints[2];  //角点像素坐标
+    vector<vector<Point2f> > imagePoints[2];  // 角点像素坐标
     vector<vector<Point3f> > objectPoints;    // 物理坐标
     Size imageSize;
 
@@ -49,10 +49,12 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     {
         for( k = 0; k < 2; k++ )
         {
-            const string  filename = imagelist[i*2+k];
+			//处理左右一对图像
+            const string filename = imagelist[i*2+k];
             Mat img = imread(filename, 0);
             if(img.empty())
                 break;
+
             if(imageSize == Size())
                 imageSize = img.size();
             else if( img.size() != imageSize )  //确定所有图像大小一样
@@ -60,10 +62,12 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                 cout << "The image " << filename << " has the size different from the first image size. Skipping the pair\n";
                 break;
             }   
+
             bool found = false;
             vector<Point2f>& corners = imagePoints[k][j];
             for( int scale = 1; scale <= maxScale; scale++ )
             {
+				// 两种尺度检测角点
                 Mat timg;
                 if( scale == 1 )
                     timg = img;
@@ -71,7 +75,8 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                     resize(img, timg, Size(), scale, scale);
 		
                 found = findChessboardCorners(timg, boardSize, corners,
-                    CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);		
+							CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);		
+
                 if( found )
                 {
                     if( scale > 1 )
@@ -82,6 +87,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                     break;
                 }
             }
+
             if( displayCorners )
             {
                 cout << filename << endl;
@@ -97,13 +103,17 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
             }
             else
                 putchar('.');
+
             if( !found )  // whether scale = 1 or 2  can not calculate conners.
                 break;
+
+			// corner detect in sub pixel
             cornerSubPix(img, corners, Size(11,11), Size(-1,-1),
                          TermCriteria(TermCriteria::COUNT+TermCriteria::EPS,
                                       30, 0.01));
         }
-        if( k == 2 )  //
+
+        if( k == 2 )  // 检测完一对图像
         {
             goodImageList.push_back(imagelist[i*2]);  // Add data to the end of the %vector
             goodImageList.push_back(imagelist[i*2+1]);
@@ -132,32 +142,16 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 
     cout << "Running stereo calibration ...\n";
 
-    Mat cameraMatrix[2], distCoeffs[2];
-//*************************************************//
-//     FileStorage  fs1;
-//     fs1.open("../data/intrinsics_Left.xml", FileStorage::READ);
-//     
-//     Mat intrinsic_matrix_loaded, distortion_coeffs_loaded;
-//     fs1["camera_matrix"] >> intrinsic_matrix_loaded;
-//     fs1["distortion_cofficients"] >> distortion_coeffs_loaded;
-//     fs1.release();
-//     
-//     cameraMatrix[0] = intrinsic_matrix_loaded;
-//     distCoeffs[0] = distortion_coeffs_loaded;
-//    
-//     fs1.open("../data/intrinsics_Right.xml", FileStorage::READ);
-//     fs1["camera_matrix"] >> intrinsic_matrix_loaded;
-//     fs1["distortion_cofficients"] >> distortion_coeffs_loaded;
-//     fs1.release(); 
-//    
-//     cameraMatrix[1] = intrinsic_matrix_loaded; 
-//     distCoeffs[1] = distortion_coeffs_loaded;
-    
-//******************************************************//  
+    Mat cameraMatrix[2], distCoeffs[2]; //内参矩阵、畸变向量
+    Mat R, T, E, F; //旋转矩阵、平移向量、本征矩阵、基础矩阵
+
     cameraMatrix[0] = Mat::eye(3, 3, CV_64F);  
     cameraMatrix[1] = Mat::eye(3, 3, CV_64F);
-    Mat R, T, E, F;
 
+	// R: 第一个相机和第二个相机位姿之间的旋转矩阵
+	// T: 第一个相机和第二个相机位姿之间的平移向量
+	// E：本征矩阵
+	// T：基础矩阵
     double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
 			cameraMatrix[0], distCoeffs[0],
 			cameraMatrix[1], distCoeffs[1],
@@ -171,17 +165,6 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 			);
     cout << "done with RMS error=" << rms << endl;
 
-//                     CALIB_FIX_ASPECT_RATIO +
-//                     CALIB_ZERO_TANGENT_DIST +
-//                     CALIB_SAME_FOCAL_LENGTH +
-//                     CALIB_RATIONAL_MODEL +
-//                     CALIB_FIX_K3 + CALIB_FIX_K4 + CALIB_FIX_K5,       
-    
-// CALIBRATION QUALITY CHECK
-// because the output fundamental matrix implicitly 
-// includes all the output information,
-// we can check the quality of calibration using the
-// epipolar geometry constraint: m2^t*F*m1=0  极线约束检验
     double err = 0;
     int npoints = 0;
     vector<Vec3f> lines[2];
@@ -226,18 +209,6 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   0, -1, imageSize, &validRoi[0], &validRoi[1]);    
                  
-//	   0, -1, imageSize, &validRoi[0], &validRoi[1]);
-//     fs.open(storextrinsicsyml, FileStorage::WRITE);
-//     if( fs.isOpened() )
-//     {
-//         fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
-//         fs.release();
-//     }
-//     else
-//         cout << "Error: can not save the extrinsic parameters\n";
-
-// OpenCV can handle left-right
-// or up-down camera arrangements
     bool isVerticalStereo = fabs(P2.at<double>(1, 3)) > fabs(P2.at<double>(0, 3));
     
 // COMPUTE AND DISPLAY RECTIFICATION
@@ -271,6 +242,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
         P1 = cameraMatrix[0];
         P2 = cameraMatrix[1];
     }
+
     fs.open(storextrinsicsyml, FileStorage::WRITE);
     if( fs.isOpened() )
     {
@@ -336,11 +308,10 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     }
 }
 
-// 立体标定
 void StereoCalibration(const std::string &imagelistfn, const std::string &storintrinsics, 
 		       const std::string &storextrinsics)
 {
-	Size boardSize = Size(CORNER_COLS, CORNER_ROWS);  // 棋格数 corners 
+	Size boardSize = Size(CORNER_COLS, CORNER_ROWS);
     bool showRectified = true;  
 
     vector<string> imagelist;

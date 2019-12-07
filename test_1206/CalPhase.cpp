@@ -54,10 +54,10 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 	{
 		for (int j = 0; j < width; j++)
 		{
-			float I1 = (float)img1.at<uchar>(i, j);
-			float I2 = (float)img2.at<uchar>(i, j);
-			float I3 = (float)img3.at<uchar>(i, j);
-			float I4 = (float)img4.at<uchar>(i, j);
+			float I1 = (float)img2.at<uchar>(i, j);
+			float I2 = (float)img3.at<uchar>(i, j);
+			float I3 = (float)img4.at<uchar>(i, j);
+			float I4 = (float)img1.at<uchar>(i, j);
 
 			if (I4 == I2 && I1 > I3) // 四个特殊位置
 			{
@@ -90,6 +90,8 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 		}
 	}
 
+	return wrapped_phase;
+
 	/*
 	for(int i=0; i < height; i++)
     {
@@ -113,8 +115,6 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     //printf("Done in %.2lf seconds.\n", elapsed_secs);
     //cout << "=============================\n" << endl;
-    
-	return wrapped_phase;
 }
 
 void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
