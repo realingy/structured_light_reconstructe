@@ -20,7 +20,7 @@ Mat image_phase[4];
 Mat imageWrappedPhase;
 
 // 格雷码图像
-Mat gray_codes[6];
+Mat gray_codes[7];
 
 void PhaseShiftPatternGenerate(int freq)
 {
@@ -60,6 +60,7 @@ void LoadImage()
 	gray_codes[3] = imread("pattern/vGray7.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	gray_codes[4] = imread("pattern/vGray9.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	gray_codes[5] = imread("pattern/vGray11.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	gray_codes[6] = imread("pattern/vGray13.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 #else
 	gray_codes[0] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 	gray_codes[1] = imread("image/Graycodeleft01.bmp", CV_LOAD_IMAGE_GRAYSCALE);
@@ -159,6 +160,7 @@ void CalUnwrappedPhase()
 	Mat img4 = gray_codes[3];
 	Mat img5 = gray_codes[4];
 	Mat img6 = gray_codes[5];
+	Mat img7 = gray_codes[6];
 
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
@@ -170,12 +172,14 @@ void CalUnwrappedPhase()
 	threshold(img4, img4, thresh, 1, CV_THRESH_BINARY);
 	threshold(img5, img5, thresh, 1, CV_THRESH_BINARY);
 	threshold(img6, img6, thresh, 1, CV_THRESH_BINARY);
+	threshold(img7, img7, thresh, 1, CV_THRESH_BINARY);
 
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
 	bitwise_xor(img3, img4, img4);
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
+	bitwise_xor(img6, img7, img7);
 
 	// 相位序列Mat
 	// Mat phase_series(gHeight, gWidth, CV_32FC1, Scalar(0.0));
@@ -193,6 +197,15 @@ void CalUnwrappedPhase()
 											+ img4.at<uchar>(y, x) * 4
 											+ img5.at<uchar>(y, x) * 2
 											+ img6.at<uchar>(y, x) * 1;
+			/*
+			phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 64
+											+ img2.at<uchar>(y, x) * 32
+											+ img3.at<uchar>(y, x) * 16
+											+ img4.at<uchar>(y, x) * 8
+											+ img5.at<uchar>(y, x) * 4
+											+ img6.at<uchar>(y, x) * 2
+											+ img7.at<uchar>(y, x) * 1;
+			*/
 		}
 	}
 
