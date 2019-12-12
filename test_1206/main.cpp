@@ -22,7 +22,7 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase,
 void find_featureSAD(Mat& leftphase, Mat& rightphase);
 void find_featureBlock(Mat& leftphase, Mat& rightphase, 
                        vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint);
-
+	
 const string storintrinsicsyml  = "../data/output/intrinsics.yml";
 const string storextrinsicsyml  = "../data/output/extrinsics.yml";
 
@@ -66,6 +66,7 @@ int main(int argc, char **argv)
     if(wrapped_phaseleft_txt)
     {
 		printf("storing the wrapped_phaseleft_txt...\n");
+		//cv::normalize(wrapped_phase_left, wrapped_phase_left, -128, 127, NORM_MINMAX);
 		savePhase(wrapped_phaseleft_txt, wrapped_phase_left); //保存相位
     }
 
@@ -78,16 +79,15 @@ int main(int argc, char **argv)
     if(unwrapped_phaseleft_txt)
     {
 		printf("\nstoring the unwrapped_phaseleft_txt...");
+		cv::normalize(unwrapped_phase_left, unwrapped_phase_left, 0, 255, NORM_MINMAX);
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
     }
 
-	//保存图像需要对灰度值进行归一化（0~255）
+	// 灰度归一化
 	cv::normalize(wrapped_phase_left, wrapped_phase_left, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_left.jpg", wrapped_phase_left);
-	//cv::normalize(unwrapped_phase_left, unwrapped_phase_left, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/unwrapped_phase_left.jpg", unwrapped_phase_left);
 
-	/*
 	cout << endl << endl << "Process Right Image: \n";
     Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
     Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));
@@ -105,19 +105,22 @@ int main(int argc, char **argv)
     if(unwrapped_phaseright_txt)
     {
 		printf("\nstoring the unwrapped_phaseright_txt...\n");
+		cv::normalize(unwrapped_phase_right, unwrapped_phase_right, 0, 255, NORM_MINMAX);
 		savePhase(unwrapped_phaseright_txt, unwrapped_phase_right);
     }
 		
+	// 灰度归一化
 	cv::normalize(wrapped_phase_right, wrapped_phase_right, 0, 255, NORM_MINMAX);
 	cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_right);
 	cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
-	*/
 #endif
  
-#if 0
+#if 1
 	// stereo matching and 3D reconstruction
+
     const char* pnts3D_filename = "../data/output/pnts3D.txt";
     
+	/*
     FileStorage fs(storextrinsicsyml, FileStorage::READ);
     if(!fs.isOpened())
     {
@@ -128,24 +131,108 @@ int main(int argc, char **argv)
     Mat P1, P2;
     fs["P1"] >> P1;
     fs["P2"] >> P2;
+	*/
     
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
     cout << "Calculate feature points......"<<endl;
     
-    find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+    find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+    // find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
-    
-	cout << "the number of feature: " << leftfeaturepoints.size() <<endl;
+
+	cout << "the number of feature: " << leftfeaturepoints.size() << " <==> " << leftfeaturepoints.size() <<endl;
 
 	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
-    
+
     cout << "Calculate points3D......"<<endl;
-    cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
-    
-    cout << "Save points3D......" <<endl;    
+
+	Mat R1 = (Mat_<float>(3, 3) <<
+		-0.003449992052740, 0.908392369471684,  0.418104533149851,	  
+		 0.992268580264290, 0.054980888811595, -0.111266196509893,
+		-0.124061122738460, 0.414488124016969, -0.901558890408035);
+
+	Mat T1 = (Mat_<float>(3, 1) <<
+		3.688988301573581, -4.927452164451585, 329.276493470459510 );
+
+	Mat R2 = (Mat_<float>(3, 3) <<
+		-0.005778730523496, 0.970132888506089, 0.242505226567117,
+		 0.992520961272705, 0.035135856240512, -0.116908567010947,
+		-0.121937474583672, 0.240015937481406, -0.963080267707255);
+
+	Mat T2 = (Mat_<float>(3, 1) <<
+		3.780742082249347, -4.998608845649666, 328.926407599367390);
+
+	Mat R2T;
+	cv::transpose(R2, R2T); //转置
+
+	Mat R = R1 * R2T;
+
+	cout << "\n==> R:\n" << R << endl;
+
+	Mat T = T2 - R * T1;
+
+	cout << "\n==> T:\n" << T << endl;
+
+	T1 = (Mat_<float>(3, 4) <<
+		1.00, 0.00, 0.00, 0.00,
+		0.00, 1.00, 0.00, 0.00,
+		0.00, 0.00, 1.00, 0.00);
+
+	T2 = (Mat_<float>(3, 4) <<
+		R.at<float>(0, 0), R.at<float>(0, 1), R.at<float>(0, 2), T.at<float>(0, 0),
+		R.at<float>(1, 0), R.at<float>(1, 1), R.at<float>(1, 2), T.at<float>(1, 0),
+		R.at<float>(2, 0), R.at<float>(2, 1), R.at<float>(2, 2), T.at<float>(2, 0));
+
+	cout << "\n==> T1:\n" << T1 << endl;
+	cout << "\n==> T2:\n" << T2 << endl;
+
+	// 通过三角测量计算三维坐标
+    cv::triangulatePoints(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
+
+	/*
+	Mat R = (Mat_<float>(3, 3) <<
+		0.9826737, -0.020387046, -0.1842189,
+		0.020622084, 0.99978715, -0.00064015388,
+		0.18419276, -0.0031699166, 0.982885);
+
+	Mat T = (Mat_<float>(3, 1) <<
+		60.714165, 0.062507629, 4.5903931);
+
+    Mat cameraMatrix[2], distCoeffs[2]; //内参矩阵、畸变向量
+    Mat R1, R2, P1, P2, Q;
+    Rect validRoi[2];
+	Size imageSize;
+
+	cameraMatrix[0] = (Mat_<float>(3, 3) <<
+			0.9826737, -0.020387046, -0.1842189,
+			0.020622084, 0.99978715, -0.00064015388,
+			0.18419276, -0.0031699166, 0.982885);
+
+	distCoeffs[0] = (Mat_<float>(3, 1) << 
+			1.00, 1.00, 1.00);
+
+	cameraMatrix[1] = (Mat_<float>(3, 3) <<
+			0.9826737, -0.020387046, -0.1842189,
+			0.020622084, 0.99978715, -0.00064015388,
+			0.18419276, -0.0031699166, 0.982885);
+
+	distCoeffs[1] = (Mat_<float>(3, 1) << 
+			1.00, 1.00, 1.00);
+
+	stereoRectify(cameraMatrix[0], distCoeffs[0],
+		cameraMatrix[1], distCoeffs[1],
+		imageSize, R, T, R1, R2, P1, P2, Q,
+		0, -1, imageSize, &validRoi[0], &validRoi[1]);
+
+	// P1，P2是两个相机相对于极线校正平面的转换矩阵，也可以使用不做极线校正的矩阵
+    // cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
+	*/
+
+    cout << "Save points3D......" <<endl;
     savepnts3D(pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
+
 #endif    
 
 #if 0
@@ -221,6 +308,7 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase,
 {
 	int nr = leftphase.rows;
 	int nc = leftphase.cols;
+
 	int x, y, k;
 	float left;
 	Point2f fleft, fright;
@@ -403,7 +491,8 @@ static void savePhase(const char* filename, Mat& mat)
 static void savepnts3D(const char* filename, Mat& mat)
 {
     FILE* fp = fopen(filename, "wt");
-    Mat pnts3Dimg(4000, 4000, CV_8UC1);
+    //Mat pnts3Dimg(4000, 4000, CV_8UC1);
+    Mat pnts3Dimg(3000, 3000, CV_8UC1);
     
     float *pnts3D_row1 = mat.ptr<float>(0);	
     float *pnts3D_row2 = mat.ptr<float>(1);
@@ -423,7 +512,7 @@ static void savepnts3D(const char* filename, Mat& mat)
       
       i = (int)(10*pnts3D_data1) + 1000; // col
       j = (int)(10*pnts3D_data2) + 2000; // row
-      pixelsvel = (int)(225*pnts3D_data3 / 1900.00);
+      pixelsvel = (uchar)(225 * pnts3D_data3 / 1900.00);
      // pixelsvel = pnts3D_data3;
       if( i < pnts3Dimg.cols && j < pnts3Dimg.rows && pixelsvel < 255)
          pnts3Dimg.at<uchar>(j, i) = pixelsvel;
@@ -433,5 +522,101 @@ static void savepnts3D(const char* filename, Mat& mat)
 
 }
 
+/*
+void pose_estimation_2d2d(
+	const std::vector<KeyPoint>& keypoints_1,
+	const std::vector<KeyPoint>& keypoints_2,
+	const std::vector< DMatch >& matches,
+	Mat& R, Mat& t)
+{
+	// 相机内参,TUM Freiburg2
+	Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
 
+	//-- 把匹配点转换为vector<Point2f>的形式
+	vector<Point2f> points1;
+	vector<Point2f> points2;
+
+	for (int i = 0; i < (int)matches.size(); i++)
+	{
+		points1.push_back(keypoints_1[matches[i].queryIdx].pt);
+		points2.push_back(keypoints_2[matches[i].trainIdx].pt);
+	}
+
+	//-- 计算基础矩阵
+	Mat fundamental_matrix;
+	fundamental_matrix = findFundamentalMat(points1, points2, CV_FM_8POINT);
+	cout << "fundamental_matrix is " << endl << fundamental_matrix << endl;
+
+	//-- 计算本质矩阵
+	Point2d principal_point(325.1, 249.7);				//相机主点, TUM dataset标定值
+	int focal_length = 521;						//相机焦距, TUM dataset标定值
+	Mat essential_matrix;
+	essential_matrix = findEssentialMat(points1, points2, focal_length, principal_point);
+	cout << "essential_matrix is " << endl << essential_matrix << endl;
+
+	//-- 计算单应矩阵
+	Mat homography_matrix;
+	homography_matrix = findHomography(points1, points2, RANSAC, 3);
+	cout << "homography_matrix is " << endl << homography_matrix << endl;
+
+	//-- 从本质矩阵中恢复旋转和平移信息.
+	recoverPose(essential_matrix, points1, points2, R, t, focal_length, principal_point);
+	cout << "R is " << endl << R << endl;
+	cout << "t is " << endl << t << endl;
+}
+
+// 将像素坐标转换至相机坐标
+Point2f pixel2cam(const Point2d& p, const Mat& K)
+{
+	return Point2f
+	(
+		(p.x - K.at<double>(0, 2)) / K.at<double>(0, 0),
+		(p.y - K.at<double>(1, 2)) / K.at<double>(1, 1)
+	);
+}
+
+// 三角测量功能函数
+void triangulation(
+	const vector<KeyPoint> & keypoint_1,
+	const vector<KeyPoint> & keypoint_2,
+	const std::vector<DMatch> & matches,
+	const Mat & R, const Mat & t,
+	vector<Point3d>& points)
+{
+	Mat T1 = (Mat_<float>(3, 4) <<
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0);
+	Mat T2 = (Mat_<float>(3, 4) <<
+		R.at<double>(0, 0), R.at<double>(0, 1), R.at<double>(0, 2), t.at<double>(0, 0),
+		R.at<double>(1, 0), R.at<double>(1, 1), R.at<double>(1, 2), t.at<double>(1, 0),
+		R.at<double>(2, 0), R.at<double>(2, 1), R.at<double>(2, 2), t.at<double>(2, 0)
+		);
+
+	Mat K = (Mat_<double>(3, 3) << 520.9, 0, 325.1, 0, 521.0, 249.7, 0, 0, 1);
+	vector<Point2f> pts_1, pts_2;
+	for (DMatch m : matches)
+	{
+		// 将像素坐标转换至相机坐标
+		pts_1.push_back(pixel2cam(keypoint_1[m.queryIdx].pt, K));
+		pts_2.push_back(pixel2cam(keypoint_2[m.trainIdx].pt, K));
+	}
+
+	Mat pts_4d;
+	cv::triangulatePoints(T1, T2, pts_1, pts_2, pts_4d);
+
+	// 转换成非齐次坐标
+	for (int i = 0; i < pts_4d.cols; i++)
+	{
+		Mat x = pts_4d.col(i);
+		x /= x.at<float>(3, 0); // 归一化   //金戈大王注：此处的归一化是指从齐次坐标变换到非齐次坐标。而不是变换到归一化平面。
+		Point3d p(
+			x.at<float>(0, 0),
+			x.at<float>(1, 0),
+			x.at<float>(2, 0)
+		);
+		points.push_back(p);
+	}
+}
+*/
 

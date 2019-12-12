@@ -43,9 +43,9 @@ Mat CalWrappedPhase(const std::string &Rect_images)
     int width = img1.cols;  //列数
     Mat wrapped_phase(Size(width, height), CV_32FC1, Scalar(0.0));
     
-    //cout << "\n=============================" <<endl;
-    //cout << "channels: "  << img1.channels() <<endl;
-    //cout << "height: " << height << ", width: " << width <<endl;
+    //cout << "\n=============================" << endl;
+    //cout << "channels: "  << img1.channels() << endl;
+    //cout << "height: " << height << ", width: " << width << endl;
     
     //clock_t start=0, end=0;
     //start = clock();  //开始计时
@@ -58,7 +58,7 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 			float I2 = (float)img3.at<uchar>(i, j);
 			float I3 = (float)img4.at<uchar>(i, j);
 			float I4 = (float)img1.at<uchar>(i, j);
-
+				
 			if (I4 == I2 && I1 > I3) // 四个特殊位置
 			{
 				wrapped_phase.at<float>(i, j) = 0;
@@ -108,10 +108,10 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 		}
 	}
 	*/
-    
+
     //end = clock(); //计时结束
 	//cout << "Done!!!" <<endl;
-    
+
 	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     //printf("Done in %.2lf seconds.\n", elapsed_secs);
     //cout << "=============================\n" << endl;
@@ -146,6 +146,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 	}
 }
 
+// 格雷码方式解相
 void UnwrappedPhaseGraycodeMethod(cv::Mat& src, cv::Mat& dst, const std::string &Rect_images)
 {
 	const char * series_phase_txt = "../data/output/series_phase.txt";
@@ -172,7 +173,8 @@ void UnwrappedPhaseGraycodeMethod(cv::Mat& src, cv::Mat& dst, const std::string 
 	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
   
 	// 二值化阈值
-	uchar thresh = 130; // 0-255 model21:200   model1:127
+	// 0-255 model21:200   model1:127
+	uchar thresh = 130;
 
 	threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
 	threshold(img2, img2, thresh, 1, CV_THRESH_BINARY);
@@ -201,6 +203,13 @@ void UnwrappedPhaseGraycodeMethod(cv::Mat& src, cv::Mat& dst, const std::string 
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
 
+	cv::imwrite("../data/bin1.bmp", img1);
+	cv::imwrite("../data/bin2.bmp", img2);
+	cv::imwrite("../data/bin3.bmp", img3);
+	cv::imwrite("../data/bin4.bmp", img4);
+	cv::imwrite("../data/bin5.bmp", img5);
+	cv::imwrite("../data/bin6.bmp", img6);
+
 #if 1
 	int x,y;
 	int width = img1.cols;
@@ -218,12 +227,12 @@ void UnwrappedPhaseGraycodeMethod(cv::Mat& src, cv::Mat& dst, const std::string 
     
 		for (x = 0; x < width; x++)
 		{
-			phase_series.at<uchar>(y,x) = ((int)(*img1_ptr++))*32
-											+ ((int)(*img2_ptr++))*16
-											+ ((int)(*img3_ptr++))*8
-											+ ((int)(*img4_ptr++))*4 
-											+ ((int)(*img5_ptr++))*2
-											+ ((int)(*img6_ptr++))*1; 
+			phase_series.at<uchar>(y,x) = ((*img1_ptr++))*32
+											+ ((*img2_ptr++))*16
+											+ ((*img3_ptr++))*8
+											+ ((*img4_ptr++))*4 
+											+ ((*img5_ptr++))*2
+											+ ((*img6_ptr++))*1; 
 		}
 	}
   
