@@ -180,10 +180,9 @@ int main(int argc, char **argv)
 	cv::imwrite("../myimages/image_right.png", image_right);
 	*/
 
-	return 0;
-
 	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
 
+#if 1
 	FileStorage fs(storextrinsicsyml, FileStorage::READ);
 	if (!fs.isOpened())
 	{
@@ -194,14 +193,50 @@ int main(int argc, char **argv)
 	Mat P1, P2;
 	fs["P1"] >> P1;
 	fs["P2"] >> P2;
-    
+#else
+	Mat R1 = (Mat_<float>(3, 3) <<
+		-0.003449992052740, 0.908392369471684, 0.418104533149851,
+		0.992268580264290, 0.054980888811595, -0.111266196509893,
+		-0.124061122738460, 0.414488124016969, -0.901558890408035);
+
+	Mat T1 = (Mat_<float>(3, 1) <<
+		3.688988301573581, -4.927452164451585, 329.276493470459510);
+
+	Mat R2 = (Mat_<float>(3, 3) <<
+		-0.005778730523496, 0.970132888506089, 0.242505226567117,
+		0.992520961272705, 0.035135856240512, -0.116908567010947,
+		-0.121937474583672, 0.240015937481406, -0.963080267707255);
+
+	Mat T2 = (Mat_<float>(3, 1) <<
+		3.780742082249347, -4.998608845649666, 328.926407599367390);
+
+	Mat R2T;
+	cv::transpose(R2, R2T); //转置
+
+	Mat R = R1 * R2T;
+
+	Mat T = T2 - R * T1;
+
+	Mat P1 = (Mat_<float>(3, 4) <<
+		1.00, 0.00, 0.00, 0.00,
+		0.00, 1.00, 0.00, 0.00,
+		0.00, 0.00, 1.00, 0.00);
+
+	Mat P2 = (Mat_<float>(3, 4) <<
+		R.at<float>(0, 0), R.at<float>(0, 1), R.at<float>(0, 2), T.at<float>(0, 0),
+		R.at<float>(1, 0), R.at<float>(1, 1), R.at<float>(1, 2), T.at<float>(1, 0),
+		R.at<float>(2, 0), R.at<float>(2, 1), R.at<float>(2, 2), T.at<float>(2, 0));
+#endif
+	cout << "\n==> P1:\n" << P1 << endl;
+	cout << "\n==> P2:\n" << P2 << endl;
+
     cout << "\n=============================" << endl;
     cout << "Calculate points3D......"<<endl;
     cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
     
     const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
 
-    cout << "Save points3D......" <<endl;    
+    cout << "Save points3D......" <<endl;
     savepnts3D(pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
 #endif    
@@ -465,7 +500,7 @@ static void savePhase(const char* filename, Mat& mat)
 static void savepnts3D(const char* filename, Mat& mat)
 {
     FILE* fp = fopen(filename, "wt");
-    Mat pnts3Dimg(4000, 4000, CV_8UC1);
+    //Mat pnts3Dimg(4000, 4000, CV_8UC1);
     
     float *pnts3D_row1 = mat.ptr<float>(0);	
     float *pnts3D_row2 = mat.ptr<float>(1);
@@ -486,11 +521,11 @@ static void savepnts3D(const char* filename, Mat& mat)
       i = (int)(10*pnts3D_data1) + 1000; // col
       j = (int)(10*pnts3D_data2) + 2000; // row
       pixelsvel = (int)(225*pnts3D_data3 / 1900.00);
-     // pixelsvel = pnts3D_data3;
-      if( i < pnts3Dimg.cols && j < pnts3Dimg.rows && pixelsvel < 255)
-         pnts3Dimg.at<uchar>(j, i) = pixelsvel;
+      // pixelsvel = pnts3D_data3;
+      // if( i < pnts3Dimg.cols && j < pnts3Dimg.rows && pixelsvel < 255)
+      //	pnts3Dimg.at<uchar>(j, i) = pixelsvel;
     }
-    imwrite("../mydata/output/pnts3D.jpg", pnts3Dimg);
+    //imwrite("../mydata/output/pnts3D.jpg", pnts3Dimg);
     fclose(fp);
 }
 
