@@ -29,8 +29,7 @@ const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
 int main(int argc, char **argv) 
 {
 /***********************Stereo Calibration*****************************************/
-/***********************相机立体标定*****************************************/
-#if 0
+#if 1
 	const string Calibimagelistfn = "../mydata/input/stereo_calib_images.xml";  
      
 	cout << "Stereo Calibration......" <<endl;
@@ -47,12 +46,13 @@ int main(int argc, char **argv)
 
 #endif
 
-#if 0
+#if 1
 	// images Rectified......
 	const string Phaseimageslistfn  = "../mydata/input/phase_images.xml";
 	const string Rectifiedimageslistfn = "../mydata/input/Rect_phase_images.xml";
      
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
+
 #endif
 
 #if 1
@@ -154,13 +154,12 @@ int main(int argc, char **argv)
 #if 1
 	// stereo matching and 3D reconstruction
     
-    
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
     cout << "\n=============================" << endl;
     cout << "Calculate feature points......"<<endl;
     
-    // find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
-    find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+    find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+    // find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
     
@@ -239,6 +238,8 @@ int main(int argc, char **argv)
     cout << "Save points3D......" <<endl;
     savepnts3D(pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
+
+	return 0;
 #endif    
 
 	/*********************surface reconstruction************************************/

@@ -24,7 +24,6 @@ bool readStringList( const string& filename, vector<string>& l)
     return true;
 }
 
-
 static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated,
 			bool showRectified, const string &storintrinsicsyml, const string &storextrinsicsyml)
 {
@@ -339,12 +338,12 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     }
 }
 
-// 立体标定
+// 立体标定(对外公开接口)
 void StereoCalibration(const std::string &imagelistfn, const std::string &storintrinsics, 
 		       const std::string &storextrinsics)
 {
 	Size boardSize = Size(CORNER_COLS, CORNER_ROWS);  // 棋格数 corners 
-    bool showRectified = true;  
+    bool showRectified = false;  
 
     vector<string> imagelist;
     bool ok = readStringList(imagelistfn, imagelist);
@@ -353,21 +352,13 @@ void StereoCalibration(const std::string &imagelistfn, const std::string &storin
         cout << "can not open " << imagelistfn << " or the string list is empty." << endl;
     }
 
-	/*
-	cout << "open " << imagelistfn << " success." << endl;
-	for (auto image : imagelist)
-	{
-		cout << image << "\n";
-	}
-	*/
-
     StereoCalib(imagelist, boardSize, true, showRectified, storintrinsics, storextrinsics);
 }
 
 void ImgRectified(const std::string& intrinsic_filename, const std::string& extrinsic_filename, 
 		  const std::string& imageListfn, const std::string& RectimageListfn)
 {
-	bool  showRect = true;
+	bool  showRect = false;
     vector<string> imagelist;
     vector<string> Rectimagelist;
     bool ok = readStringList(imageListfn, imagelist);
