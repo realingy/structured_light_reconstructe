@@ -38,15 +38,11 @@ include_directories(${OpenCV_DIR}/include)
 include_directories(${OpenCV_DIR}/include/opencv)
 include_directories(${OpenCV_DIR}/include/opencv2)
 
-add_executable(Phase_Shift main.cpp CalPhase.h CameraCalib.h)
-add_library(Camera_Calib_LIB CameraCalib.cpp CameraCalib.h)
-add_library(CalPhase_LIB CalPhase.cpp CalPhase.h)
-add_library(ProPoint_LIB Propointcloud.cpp Propointcloud.h)
+file(GLOB SRC ./*.cpp)
+file(GLOB HEADER ./*.h)
 
-target_link_libraries(Phase_Shift ${OpenCV_LIBS} ${PCL_LIBRARIES})
-target_link_libraries(Phase_Shift Camera_Calib_LIB)
-target_link_libraries(Phase_Shift CalPhase_LIB)
-target_link_libraries(Phase_Shift ProPoint_LIB)
+add_executable(Gray_Code_Phase_Shift ${SRC} ${HEADER})
 
+target_link_libraries(Gray_Code_Phase_Shift ${OpenCV_LIBS} ${PCL_LIBRARIES})
 
-install(TARGETS Phase_Shift RUNTIME DESTINATION bin)
+install(TARGETS Gray_Code_Phase_Shift RUNTIME DESTINATION bin)
