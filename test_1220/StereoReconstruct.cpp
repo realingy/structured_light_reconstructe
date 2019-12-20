@@ -5,61 +5,63 @@
 const string storintrinsicsyml  = "../data/output/intrinsics.yml";
 const string storextrinsicsyml  = "../data/output/extrinsics.yml";
 
+// 特征点计算
+// leftphase/rightphase: CV_32F, 1-channel image
 void find_featurepionts(Mat& leftphase, Mat& rightphase, vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint)
 {
-	int nr = leftphase.rows;
-	int nc = leftphase.cols;
-	int x, y, k1, k2;
+	int row = leftphase.rows;
+	int col = leftphase.cols;
+
+	cout << " ========================================= " << row << " == " << col << " == " << row * col << endl;
+
+	int k1, k2;
 	float left, right;
-	Point2f fleft, fright;
+	Point2f point_left, point_right;
 	float* pre_right_data;
 	int pre_k;
 
-	for (y = 0; y < nr; y += 1)
+	for (int j = 0; j < row; j += 1)
 	{
-		float* left_phase_data = leftphase.ptr<float>(y);
-		float* right_phase_data = rightphase.ptr<float>(y);
-		float* left_phase_data2;
-		// k = 0;
-		// pre_right_data = right_phase_data;
-		// pre_k = k;
+		float * left_phase_data = leftphase.ptr<float>(j);
+		float * right_phase_data = rightphase.ptr<float>(j);
+		float * left_phase_data2;
 
-		for (x = 0; x < nc; x++)
+		for (int i = 0; i < col; i++)
 		{
 			left = *left_phase_data++;
 
+			//大于2*PI
 			if (left > 2 * CV_PI)
 			{
-				// right_phase_data = pre_right_data;
-				// k = pre_k;
-				// order constraint	
-				right_phase_data = rightphase.ptr<float>(y);
+				right_phase_data = rightphase.ptr<float>(j);
 				k1 = 0;
 
-				while ((abs(left - *right_phase_data++) > PHASE_THRESHOLD) && (k1 < nc)) k1++;
-				if (k1 < nc)
+				// 寻找匹配点
+				while ((abs(left - *right_phase_data++) > PHASE_THRESHOLD) && (k1 < col))
+					k1++;
+
+				if (k1 < col)
 				{
-					//pre_right_data = right_phase_data;
-					//pre_k = k;
 					right = *(--right_phase_data);
-					left_phase_data2 = leftphase.ptr<float>(y);
+					left_phase_data2 = leftphase.ptr<float>(j);
 					k2 = 0;
-					while ((abs(right - *left_phase_data2++) > PHASE_THRESHOLD) && (k2 < nc))
+					while ((abs(right - *left_phase_data2++) > PHASE_THRESHOLD) && (k2 < col))
 						k2++;
 
-					if ((k2 < nc) && (abs(k2 - x) < 2))
+					if ((k2 < col) && (abs(k2 - i) < 2))
 					{
-						fleft.x = (x + k2) / 2;
-						fleft.y = y;
-						fright.x = k1;
-						fright.y = y;
-						leftkeypoint.push_back(fleft);
-						rightkeypoint.push_back(fright);
+						point_left.x = (i + k2) / 2;
+						point_left.y = j;
+						point_right.x = k1;
+						point_right.y = j;
+						leftkeypoint.push_back(point_left);
+						rightkeypoint.push_back(point_right);
 					}
 				}
 			}
 		}
 	}
+
 }
 
 void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint)
@@ -69,7 +71,7 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 
 	int x, y, k;
 	float left;
-	Point2f fleft, fright;
+	Point2f point_left, point_right;
 
 	for (y = 0; y < nr; y += 1)
 	{
@@ -88,12 +90,12 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 				while ((abs(left - *right_phase_data++) > PHASE_THRESHOLD) && (k < nc)) k++;
 				if (k < nc)
 				{
-					fleft.x = x;
-					fleft.y = y;
-					fright.x = k;
-					fright.y = y;
-					leftkeypoint.push_back(fleft);
-					rightkeypoint.push_back(fright);
+					point_left.x = x;
+					point_left.y = y;
+					point_right.x = k;
+					point_right.y = y;
+					leftkeypoint.push_back(point_left);
+					rightkeypoint.push_back(point_right);
 				}
 			}
 		}
@@ -110,7 +112,7 @@ void find_featureBlock(Mat& leftphase, Mat& rightphase, vector<Point2f>& leftkey
 	int w = Blocksize.width;
 	int x, y, i, j, k;
 
-	Point2f fleft, fright;
+	Point2f point_left, point_right;
 
 	float leftdataaver, rightdataaver;
 	for (y = 0; y < nr - h; y += h)
@@ -138,12 +140,12 @@ void find_featureBlock(Mat& leftphase, Mat& rightphase, vector<Point2f>& leftkey
 					rightdataaver = rightdataaver / (h * w);
 					if (abs(rightdataaver - leftdataaver) < BLOCK_THRESHOLD)
 					{
-						fleft.x = x / 2 + 1;
-						fleft.y = y / 2 + 1;
-						fright.x = k / 2 + 1;
-						fright.y = y / 2 + 1;
-						leftkeypoint.push_back(fleft);
-						rightkeypoint.push_back(fright);
+						point_left.x = x / 2 + 1;
+						point_left.y = y / 2 + 1;
+						point_right.x = k / 2 + 1;
+						point_right.y = y / 2 + 1;
+						leftkeypoint.push_back(point_left);
+						rightkeypoint.push_back(point_right);
 						break;
 					}
 				}

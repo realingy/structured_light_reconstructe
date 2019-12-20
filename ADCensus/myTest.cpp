@@ -130,7 +130,7 @@ void createAndSavePointCloud(cv::Mat &disparity, cv::Mat &leftImage, cv::Mat &Q,
 int main(int argc, char *argv[])
 {
     bool readSuccessfully = true;
-   // libconfig::Config cfg;
+    //libconfig::Config cfg;
 
     bool success = false;
 

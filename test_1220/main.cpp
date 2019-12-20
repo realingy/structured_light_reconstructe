@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
 #include <math.h>
 #include <time.h>
 #include <string>
@@ -106,12 +107,15 @@ int main(int argc, char **argv)
 #endif
 
 	// Float, 1-channel gray image
-	//Mat unwrapped_phase_left  = cv::imread("../images/unpahse0.bmp", IMREAD_GRAYSCALE);
-	//Mat unwrapped_phase_right = cv::imread("../images/unpahse1.bmp", IMREAD_GRAYSCALE);
-	//unwrapped_phase_left.convertTo(unwrapped_phase_left, CV_32F); // convert to float
-	//unwrapped_phase_right.convertTo(unwrapped_phase_right, CV_32F); // convert to float
-	cv::Mat_<float> unwrapped_phase_left = imread("../images/unpahse0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-	cv::Mat_<float> unwrapped_phase_right = imread("../images/unpahse1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	Mat unwrapped_phase_left  = cv::imread("../images/unpahse0.bmp", IMREAD_GRAYSCALE);
+	Mat unwrapped_phase_right = cv::imread("../images/unpahse1.bmp", IMREAD_GRAYSCALE);
+	Mat tmp0 = unwrapped_phase_left;
+	Mat tmp1 = unwrapped_phase_right;
+	unwrapped_phase_left.convertTo(unwrapped_phase_left, CV_32F); // convert to float
+	unwrapped_phase_right.convertTo(unwrapped_phase_right, CV_32F); // convert to float
+
+	//cv::Mat_<float> unwrapped_phase_left = imread("../images/unpahse0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	//cv::Mat_<float> unwrapped_phase_right = imread("../images/unpahse1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
 	//cv::Mat_<float> unwrapped_phase_left = imread("../data/output/unwrapped_phase_left.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	//cv::Mat_<float> unwrapped_phase_right = imread("../data/output/unwrapped_phase_right.jpg", CV_LOAD_IMAGE_GRAYSCALE);
@@ -123,15 +127,15 @@ int main(int argc, char **argv)
 	cout << "=== " << unwrapped_phase_right.channels() << endl;
 	cout << "=== " << unwrapped_phase_left.type() << endl;
 	cout << "=== " << unwrapped_phase_right.type() << endl;
+
 	//imshow("unphase0", unwrapped_phase_left);
 	//imshow("unphase1", unwrapped_phase_right);
 
-	cv::waitKey(0);
+	//cv::waitKey(0);
  
-#if 0
+#if 1
 	// stereo matching and 3D reconstruction
     
-	/*
     FileStorage fs(storextrinsicsyml, FileStorage::READ);
     if(!fs.isOpened())
     {
@@ -142,7 +146,6 @@ int main(int argc, char **argv)
     Mat P1, P2;
     fs["P1"] >> P1;
     fs["P2"] >> P2;
-	*/
     
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
     cout << "Calculate feature points......"<<endl;
@@ -155,11 +158,44 @@ int main(int argc, char **argv)
 
 	cout << "the number of feature: " << leftfeaturepoints.size() << " <==> " << leftfeaturepoints.size() <<endl;
 
-	// Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
-	Mat pnts3D(3, leftfeaturepoints.size(), CV_64F);
+	vector<KeyPoint> keypoint_left, keypoint_right;
+	KeyPoint::convert(leftfeaturepoints, keypoint_left, 1, 1, 0, -1);
+	KeyPoint::convert(rightfeaturepoints, keypoint_right, 1, 1, 0, -1);
+
+	Mat image_left, image_right;
+	// unwrapped_phase_left.convertTo(unwrapped_phase_left, CV_8U);
+	// unwrapped_phase_right.convertTo(unwrapped_phase_right, CV_8U);
+
+	/*
+	Mat tmp0;
+	tmp0.create(unwrapped_phase_left.rows, unwrapped_phase_left.cols, CV_8UC1);
+	//src.copyTo(image);
+	int fromTo1[] = { 0, 0, 1, 1, 2, 2 };
+	mixChannels(&unwrapped_phase_left, 1, &tmp0, 1, fromTo1, 3);
+	*/
+
+	cv::drawKeypoints(tmp0, keypoint_left, image_left);
+	cv::drawKeypoints(tmp1, keypoint_right, image_right);
+
+	cv::imwrite("../images/image_left.png", image_left);
+	cv::imwrite("../images/image_right.png", image_right);
+
+	vector<DMatch> good_matches;
+	Mat image_out;
+
+	/*
+	cv::drawMatches();
+	cv::drawMatches(tmp0, keypoint_left, tmp1, keypoint_right, good_matches, image_out, Scalar::all(-1), vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+	*/
+
+	while (1) {}
+
+	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
+	// Mat pnts3D(3, leftfeaturepoints.size(), CV_64F);
 
     cout << "Calculate points3D......"<<endl;
 
+	/*
 	Mat R1 = (Mat_<float>(3, 3) <<
 		-0.003449992052740, 0.908392369471684,  0.418104533149851,	  
 		 0.992268580264290, 0.054980888811595, -0.111266196509893,
@@ -199,11 +235,10 @@ int main(int argc, char **argv)
 
 	// cout << "\n==> T1:\n" << T1 << endl;
 	// cout << "\n==> T2:\n" << T2 << endl;
+	*/
 
 	// 通过三角测量计算三维坐标(基于世界坐标和图像坐标的转换关系)
-    cv::triangulatePoints(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
-
-    // Triangulate(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
+    // cv::triangulatePoints(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
 	/*
 	Mat R = (Mat_<float>(3, 3) <<
@@ -239,17 +274,17 @@ int main(int argc, char **argv)
 		cameraMatrix[1], distCoeffs[1],
 		imageSize, R, T, R1, R2, P1, P2, Q,
 		0, -1, imageSize, &validRoi[0], &validRoi[1]);
-
-	// P1，P2是两个相机相对于极线校正平面的转换矩阵，也可以使用不做极线校正的矩阵
-    // cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 	*/
+
+	// P1，P2是两个相机相对于校正平面的转换矩阵，也可以使用不做极线校正的矩阵
+    cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
     const char* pnts3D_filename = "../data/output/pnts3D.txt";
 
     cout << "Save points3D......" <<endl;
     savepnts3D(pnts3D_filename, pnts3D);
 
-    //savepntsPCD(pnts3D);
+    savepntsPCD(pnts3D);
 
 #endif    
 
