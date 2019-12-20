@@ -106,16 +106,29 @@ int main(int argc, char **argv)
 #endif
 
 	// Float, 1-channel gray image
-	Mat unwrapped_phase_left = cv::imread("../images/unpahse0.bmp", CV_32FC1);
-	Mat unwrapped_phase_right = cv::imread("../images/unpahse1.bmp", CV_32FC1);
+	//Mat unwrapped_phase_left  = cv::imread("../images/unpahse0.bmp", IMREAD_GRAYSCALE);
+	//Mat unwrapped_phase_right = cv::imread("../images/unpahse1.bmp", IMREAD_GRAYSCALE);
+	//unwrapped_phase_left.convertTo(unwrapped_phase_left, CV_32F); // convert to float
+	//unwrapped_phase_right.convertTo(unwrapped_phase_right, CV_32F); // convert to float
+	cv::Mat_<float> unwrapped_phase_left = imread("../images/unpahse0.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+	cv::Mat_<float> unwrapped_phase_right = imread("../images/unpahse1.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
 	//cv::Mat_<float> unwrapped_phase_left = imread("../data/output/unwrapped_phase_left.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 	//cv::Mat_<float> unwrapped_phase_right = imread("../data/output/unwrapped_phase_right.jpg", CV_LOAD_IMAGE_GRAYSCALE);
 
 	if ( !unwrapped_phase_left.data || !unwrapped_phase_right.data )
 		cout << "imread error!\n";
+
+	cout << "=== " << unwrapped_phase_left.channels() << endl;
+	cout << "=== " << unwrapped_phase_right.channels() << endl;
+	cout << "=== " << unwrapped_phase_left.type() << endl;
+	cout << "=== " << unwrapped_phase_right.type() << endl;
+	//imshow("unphase0", unwrapped_phase_left);
+	//imshow("unphase1", unwrapped_phase_right);
+
+	cv::waitKey(0);
  
-#if 1
+#if 0
 	// stereo matching and 3D reconstruction
     
 	/*
