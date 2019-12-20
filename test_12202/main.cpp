@@ -149,23 +149,11 @@ int main(int argc, char **argv)
 	cout << "=== " << unwrapped_phase_left.type() << endl;
 	cout << "=== " << unwrapped_phase_right.type() << endl;
 	*/
-
    
 	/***********************立体匹配和三维重建*****************************************/
 #if 1
 	// stereo matching and 3D reconstruction
-    const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
     
-    FileStorage fs(storextrinsicsyml, FileStorage::READ);
-    if(!fs.isOpened())
-    {
-		printf("Failed to open file extrinsics_filename.\n");
-		return 0;
-    }
-
-    Mat P1, P2;
-    fs["P1"] >> P1;
-    fs["P2"] >> P2;
     
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
     cout << "\n=============================" << endl;
@@ -192,12 +180,27 @@ int main(int argc, char **argv)
 	cv::imwrite("../myimages/image_right.png", image_right);
 	*/
 
+	return 0;
+
 	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
+
+	FileStorage fs(storextrinsicsyml, FileStorage::READ);
+	if (!fs.isOpened())
+	{
+		printf("Failed to open file extrinsics_filename.\n");
+		return 0;
+	}
+
+	Mat P1, P2;
+	fs["P1"] >> P1;
+	fs["P2"] >> P2;
     
     cout << "\n=============================" << endl;
     cout << "Calculate points3D......"<<endl;
     cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
     
+    const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
+
     cout << "Save points3D......" <<endl;    
     savepnts3D(pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
