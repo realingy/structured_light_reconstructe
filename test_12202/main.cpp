@@ -34,15 +34,19 @@ int main(int argc, char **argv)
      
 	cout << "Stereo Calibration......" <<endl;
      
-	clock_t start=0, end=0;
-	start = clock();  //开始计时     
+	//clock_t start=0, end=0;
+	//start = clock();  //开始计时     
      
-	StereoCalibration(Calibimagelistfn, storintrinsicsyml, storextrinsicsyml);
+	// 根据标定图像进行相机内外参的计算
+	// StereoCalibration(Calibimagelistfn, storintrinsicsyml, storextrinsicsyml);
+
+	// 根据Matlab标定得到的内参数据填充内参文件，进行外参的计算（相机位置校正）
+	StereoCalibration2(storintrinsicsyml, storextrinsicsyml);
      
-	end = clock(); //计时结束
+	//end = clock(); //计时结束
     
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-	printf("Done in %.2lf seconds.\n", elapsed_secs);
+	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	//printf("Done in %.2lf seconds.\n", elapsed_secs);
 
 #endif
 
@@ -52,7 +56,6 @@ int main(int argc, char **argv)
 	const string Rectifiedimageslistfn = "../mydata/input/Rect_phase_images.xml";
      
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
-
 #endif
 
 #if 1
