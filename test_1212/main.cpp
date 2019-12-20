@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimages, Rectifiedimages);
 #endif
 
-#if 1
+#if 0
     const char* wrapped_phaseleft_txt = "../data/output/wrapped_phase_left.txt";
     const char* wrapped_phaseright_txt = "../data/output/wrapped_phase_right.txt";
     const char* unwrapped_phaseleft_txt = "../data/output/unwrapped_phase_left.txt";
@@ -116,11 +116,19 @@ int main(int argc, char **argv)
 	cv::imwrite("../data/output/wrapped_phase_right.jpg", wrapped_phase_right);
 	cv::imwrite("../data/output/unwrapped_phase_right.jpg", unwrapped_phase_right);
 #endif
+
+	// Float, 1-channel gray image
+	Mat unwrapped_phase_left = cv::imread("../images/unpahse0.bmp", CV_32FC1);
+	Mat unwrapped_phase_right = cv::imread("../images/unpahse1.bmp", CV_32FC1);
+
+	//cv::Mat_<float> unwrapped_phase_left = imread("../data/output/unwrapped_phase_left.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	//cv::Mat_<float> unwrapped_phase_right = imread("../data/output/unwrapped_phase_right.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+
+	if ( !unwrapped_phase_left.data || !unwrapped_phase_right.data )
+		cout << "imread error!\n";
  
 #if 1
 	// stereo matching and 3D reconstruction
-
-    const char* pnts3D_filename = "../data/output/pnts3D.txt";
     
 	/*
     FileStorage fs(storextrinsicsyml, FileStorage::READ);
@@ -138,8 +146,9 @@ int main(int argc, char **argv)
     vector<Point2f> leftfeaturepoints, rightfeaturepoints; 
     cout << "Calculate feature points......"<<endl;
 
-    // find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
-    find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+	// 特征点匹配
+    find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+    // find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
 
@@ -171,11 +180,11 @@ int main(int argc, char **argv)
 
 	Mat R = R1 * R2T;
 
-	//cout << "\n==> R:\n" << R << endl;
+	// cout << "\n==> R:\n" << R << endl;
 
 	Mat T = T2 - R * T1;
 
-	//cout << "\n==> T:\n" << T << endl;
+	// cout << "\n==> T:\n" << T << endl;
 
 	T1 = (Mat_<float>(3, 4) <<
 		1.00, 0.00, 0.00, 0.00,
@@ -187,8 +196,8 @@ int main(int argc, char **argv)
 		R.at<float>(1, 0), R.at<float>(1, 1), R.at<float>(1, 2), T.at<float>(1, 0),
 		R.at<float>(2, 0), R.at<float>(2, 1), R.at<float>(2, 2), T.at<float>(2, 0));
 
-	//cout << "\n==> T1:\n" << T1 << endl;
-	//cout << "\n==> T2:\n" << T2 << endl;
+	// cout << "\n==> T1:\n" << T1 << endl;
+	// cout << "\n==> T2:\n" << T2 << endl;
 
 	// 通过三角测量计算三维坐标(基于世界坐标和图像坐标的转换关系)
     cv::triangulatePoints(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
@@ -234,12 +243,12 @@ int main(int argc, char **argv)
     // cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 	*/
 
+    const char* pnts3D_filename = "../data/output/pnts3D.txt";
+
     cout << "Save points3D......" <<endl;
     savepnts3D(pnts3D_filename, pnts3D);
 
-	// cout << "1111111111111111111111111111111111111\n" << pnts3D.cols << "===>" << pnts3D.rows << endl;
-
-    savepntsPCD(pnts3D);
+    //savepntsPCD(pnts3D);
 
 #endif    
 
@@ -524,7 +533,7 @@ static void savepnts3D(const char* filename, Mat& mat)
       if( i < pnts3Dimg.cols && j < pnts3Dimg.rows && pixelsvel < 255)
          pnts3Dimg.at<uchar>(j, i) = pixelsvel;
     }
-    imwrite("../data/output/pnts3D.jpg", pnts3Dimg);
+    cv::imwrite("../data/output/pnts3D.jpg", pnts3Dimg);
     fclose(fp);
 
 }
@@ -534,7 +543,6 @@ static void savepnts3D(const char* filename, Mat& mat)
 // projMatr12 相机2的世界坐标和相机坐标转换矩阵 3*4
 // projPoints1 相机1的特征点矩阵 n
 // projPoints2 相机2的特征点矩阵 n
-
 *****************************************************************/
 void Triangulate(Mat m1, Mat m2, const vector<Point2f> & projPoints1, const vector<Point2f> projPoints2, Mat points3D)
 {

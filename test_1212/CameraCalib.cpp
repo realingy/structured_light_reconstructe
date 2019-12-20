@@ -5,7 +5,7 @@ using namespace std;
 
 #define CORNER_COLS  7
 #define CORNER_ROWS  6
-bool displayCorners = false;   //观察角点
+bool displayCorners = false; //观察角点
 
 bool readStringList( const string& filename, vector<string>& l)
 {
@@ -32,7 +32,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     }
 
     const int maxScale = 2;      
-    const float squareSize = 20.f;  // Set this to your actual square size  正方形大小
+    const float squareSize = 20.f; // Set this to your actual square size  正方形大小
     // ARRAY AND VECTOR STORAGE:
 
     vector<vector<Point2f> > imagePoints[2];  // 角点像素坐标
@@ -41,8 +41,8 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 
     int i, j, k, nimages = (int)imagelist.size()/2;  //单侧图像的数量
 
-    imagePoints[0].resize(nimages);  //根据nimages确定vector的大小
-    imagePoints[1].resize(nimages);  //同上
+    imagePoints[0].resize(nimages); //根据nimages确定vector的大小
+    imagePoints[1].resize(nimages); //同上
     vector<string> goodImageList;    
    
     for(i = j = 0; i < nimages; i++)
@@ -57,11 +57,11 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 
             if(imageSize == Size())
                 imageSize = img.size();
-            else if( img.size() != imageSize )  //确定所有图像大小一样
+            else if( img.size() != imageSize ) //确定所有图像大小一样
             {
                 cout << "The image " << filename << " has the size different from the first image size. Skipping the pair\n";
                 break;
-            }   
+            }
 
             bool found = false;
             vector<Point2f>& corners = imagePoints[k][j];
