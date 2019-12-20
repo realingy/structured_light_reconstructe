@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     const char* unwrapped_phaseright_txt = "../mydata/output/unwrapped_phase_right.txt";
     const char* Rect_images_left = "../mydata/input/Rect_images_left.xml";
     const char* Rect_images_right = "../mydata/input/Rect_images_right.xml";
-    
+
 	/***********************Calculate left phase*****************************************/
 	/***********************计算左相位*****************************************/
 	// 计算左图的包裹相位
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     cout << "Phase unwrapping......" <<endl;
    
     UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
- //   UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
+	// UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
     
     cout << "Done!!!" <<endl;
     if(unwrapped_phaseright_txt)
@@ -129,6 +129,27 @@ int main(int argc, char **argv)
     //waitKey(0);
     
 #endif
+
+	/*
+	// Float, 1-channel gray image
+	//Mat unwrapped_phase_left = cv::imread("../myimages/unwrapped_phase_left.jpg", IMREAD_GRAYSCALE);
+	//Mat unwrapped_phase_right = cv::imread("../myimages/unwrapped_phase_right.jpg", IMREAD_GRAYSCALE);
+	Mat unwrapped_phase_left = cv::imread("../mydata/unwrapped_phase_left.jpg", IMREAD_GRAYSCALE);
+	Mat unwrapped_phase_right = cv::imread("../mydata/unwrapped_phase_right.jpg", IMREAD_GRAYSCALE);
+	Mat tmp0 = unwrapped_phase_left;
+	Mat tmp1 = unwrapped_phase_right;
+	unwrapped_phase_left.convertTo(unwrapped_phase_left, CV_32F); // convert to float
+	unwrapped_phase_right.convertTo(unwrapped_phase_right, CV_32F); // convert to float
+
+	if (!unwrapped_phase_left.data || !unwrapped_phase_right.data)
+		cout << "imread error!\n";
+
+	cout << "=== " << unwrapped_phase_left.channels() << endl;
+	cout << "=== " << unwrapped_phase_right.channels() << endl;
+	cout << "=== " << unwrapped_phase_left.type() << endl;
+	cout << "=== " << unwrapped_phase_right.type() << endl;
+	*/
+
    
 	/***********************立体匹配和三维重建*****************************************/
 #if 1
@@ -141,6 +162,7 @@ int main(int argc, char **argv)
 		printf("Failed to open file extrinsics_filename.\n");
 		return 0;
     }
+
     Mat P1, P2;
     fs["P1"] >> P1;
     fs["P2"] >> P2;
@@ -149,12 +171,26 @@ int main(int argc, char **argv)
     cout << "\n=============================" << endl;
     cout << "Calculate feature points......"<<endl;
     
+    // find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
     find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
-    
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
     
 	cout << "the number of feature: " << leftfeaturepoints.size() <<endl;
+
+	/*
+	vector<KeyPoint> keypoint_left, keypoint_right;
+	KeyPoint::convert(leftfeaturepoints, keypoint_left, 1, 1, 0, -1);
+	KeyPoint::convert(rightfeaturepoints, keypoint_right, 1, 1, 0, -1);
+
+	Mat image_left, image_right;
+
+	cv::drawKeypoints(tmp0, keypoint_left, image_left);
+	cv::drawKeypoints(tmp1, keypoint_right, image_right);
+
+	cv::imwrite("../myimages/image_left.png", image_left);
+	cv::imwrite("../myimages/image_right.png", image_right);
+	*/
 
 	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
     

@@ -114,7 +114,6 @@ void filterpointcloud(void)
 	pcl::io::savePCDFileASCII("../mydata/output/mls_points.pcd", mls_points);
 
 	reader.read("../mydata/output/mls_points.pcd", *cloud_res);
-  
 	/***********************Surface Reconstruction****************************************/
  
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;

@@ -109,14 +109,6 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 	}
 }
 
-/***********************************************************************
-基于多频外差的展开相位计算，得到表面采样点条纹级次k，和绝对相位（展开相位）
-输入：
-	src: 包裹相位
-	Rect_images: 极线校正（立体校正）后的图像
-输出：
-	dst：展开相位
-***********************************************************************/
 void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
 	// 相位序列
@@ -139,7 +131,6 @@ void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images
 	Mat img1 = imread(imagelist[0], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img2 = imread(imagelist[1], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img3 = imread(imagelist[2], CV_LOAD_IMAGE_GRAYSCALE);
-
 
 }
 
@@ -183,8 +174,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	// 二值化阈值
 	uchar thresh = 130; // 0-255 model21:200   model1:127
 
-	//cv::imwrite("../myimages/src6.bmp", img6);
-  
 	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
 	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
 	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
@@ -228,12 +217,14 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
 
+	/*
 	cv::imwrite("../myimages/bin1.bmp", img1);
 	cv::imwrite("../myimages/bin2.bmp", img2);
 	cv::imwrite("../myimages/bin3.bmp", img3);
 	cv::imwrite("../myimages/bin4.bmp", img4);
 	cv::imwrite("../myimages/bin5.bmp", img5);
 	cv::imwrite("../myimages/bin6.bmp", img6);
+	*/
 
 #if 1
 	int x,y;
