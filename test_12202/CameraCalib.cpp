@@ -222,6 +222,15 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     else
         cout << "Error: can not save the intrinsic parameters\n";
 
+	cout << "\n==> M1:\n" << cameraMatrix[0] << endl;
+	cout << "\n==> M2:\n" << cameraMatrix[1] << endl;
+	cout << "\n==> D1:\n" << distCoeffs[0] << endl;
+	cout << "\n==> D2:\n" << distCoeffs[1] << endl;
+	cout << "\n==> R:\n" << R << endl;
+	cout << "\n==> T:\n" << T << endl;
+
+	cout << "image_size: " << imageSize << endl;
+
 	// 相机校正
     Mat R1, R2, P1, P2, Q;
     Rect validRoi[2];
@@ -365,27 +374,29 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 	for (size_t i = 0; i < 2; i++)
 	{
 		// 存放float型数据
-		cameraMatrix[i].convertTo(cameraMatrix[i], CV_32FC1);
-		distCoeffs[i].convertTo(cameraMatrix[i], CV_32FC1);
+		cameraMatrix[i].convertTo(cameraMatrix[i], CV_64F);
+		distCoeffs[i].convertTo(cameraMatrix[i], CV_64F);
 	}
 
-	cameraMatrix[0] = (Mat_<float>(3, 3) <<
+	cameraMatrix[0] = (Mat_<double>(3, 3) <<
 							5004.084968538499200,   -0.000186077310987, 796.177176385571330,
 							 0,					  5004.288845428079200, 645.098858869668220,
 							 0,						 0,					  1);
 
-	distCoeffs[0] = (Mat_<float>(10, 1) <<
+	distCoeffs[0] = (Mat_<double>(1, 14) <<
 				-0.094291506605149, 0.454520127343520, 0.000390298085887, -0.000167794573001, 3.533934146177145,
-				 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000);
+				 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000,
+				 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000);
 
-	cameraMatrix[1] = (Mat_<float>(3, 3) <<
+	cameraMatrix[1] = (Mat_<double>(3, 3) <<
 							4991.369386877208900,    0.000227164222608, 786.153820356970750,
 							 0,					  4991.811878028854200, 648.483429215111640,
 							 0,						 0,					  1);
 
-	distCoeffs[1] = (Mat_<float>(10, 1) <<
-				-0.097747727862195,    0.605006458599360,    0.000130603752529,    0.000759994410491, - 0.765872396801609,
-				 0.000000000000000,    0.000000000000000,    0.000000000000000,    0.000000000000000,   0.000000000000000);
+	distCoeffs[1] = (Mat_<double>(1, 14) <<
+				-0.097747727862195, 0.605006458599360, 0.000130603752529, 0.000759994410491, -0.765872396801609,
+				 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000,  0.000000000000000,
+				 0.000000000000000, 0.000000000000000, 0.000000000000000, 0.000000000000000);
 
 	// save intrinsic parameters
 	FileStorage fs(storintrinsicsyml, FileStorage::WRITE);
@@ -398,16 +409,74 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 	else
 		cout << "Error: can not save the intrinsic parameters\n";
 
+	Mat I_R1, I_T1, I_R2, I_T2;
+	I_R1.convertTo(I_R1, CV_64F);
+	I_T1.convertTo(I_T1, CV_64F);
+	I_R2.convertTo(I_R2, CV_64F);
+	I_T2.convertTo(I_T2, CV_64F);
+
+	I_R1 = (Mat_<double>(3, 3) <<
+		-0.003449992052740, 0.908392369471684, 0.418104533149851,
+		0.992268580264290, 0.054980888811595, -0.111266196509893,
+		-0.124061122738460, 0.414488124016969, -0.901558890408035);
+
+	I_T1 = (Mat_<double>(3, 1) <<
+		3.688988301573581, -4.927452164451585, 329.276493470459510);
+
+	I_R2 = (Mat_<double>(3, 3) <<
+		-0.005778730523496, 0.970132888506089, 0.242505226567117,
+		0.992520961272705, 0.035135856240512, -0.116908567010947,
+		-0.121937474583672, 0.240015937481406, -0.963080267707255);
+
+	I_T2 = (Mat_<double>(3, 1) <<
+		3.780742082249347, -4.998608845649666, 328.926407599367390);
+
+	Mat R2T = Mat(Size(3,3), CV_64F);
+	cv::transpose(I_R2, R2T); //转置
+
+	Mat R, T; //两个相机的相对位置
+
+	R = I_R1 * R2T;
+	T = I_T2 - R * I_T1;
+
+	/*
+	Mat P1 = (Mat_<float>(3, 4) <<
+		1.00, 0.00, 0.00, 0.00,
+		0.00, 1.00, 0.00, 0.00,
+		0.00, 0.00, 1.00, 0.00);
+
+	Mat P2 = (Mat_<float>(3, 4) <<
+		R.at<float>(0, 0), R.at<float>(0, 1), R.at<float>(0, 2), T.at<float>(0, 0),
+		R.at<float>(1, 0), R.at<float>(1, 1), R.at<float>(1, 2), T.at<float>(1, 0),
+		R.at<float>(2, 0), R.at<float>(2, 1), R.at<float>(2, 2), T.at<float>(2, 0));
+	*/
+
     Size imageSize = Size(1600, 1200);
 
 	// 相机校正
-	Mat R1, R2, P1, P2, Q;
+	Mat R1, R2, P1, P2, Q; //两个相机相对于矫正平面的变换矩阵
 	Rect validRoi[2];
+
+	cout << "\n==> M1:\n" << cameraMatrix[0] << endl;
+	cout << "\n==> M2:\n" << cameraMatrix[1] << endl;
+	cout << "\n==> D1:\n" << distCoeffs[0] << endl;
+	cout << "\n==> D2:\n" << distCoeffs[1] << endl;
+	cout << "\n==> R:\n" << R << endl;
+	cout << "\n==> T:\n" << T << endl;
+
+	cout << "image_size: " << imageSize << endl;
 
 	stereoRectify(cameraMatrix[0], distCoeffs[0],
 		cameraMatrix[1], distCoeffs[1],
 		imageSize, R, T, R1, R2, P1, P2, Q,
 		0, -1, imageSize, &validRoi[0], &validRoi[1]);
+
+	cout << "\n==> P1:\n" << P1 << endl;
+	cout << "\n==> P2:\n" << P2 << endl;
+
+	cout << "stereo rectify successfully!\n";
+
+	// while (1);
 
 	//	   0, -1, imageSize, &validRoi[0], &validRoi[1]);
 	//     fs.open(storextrinsicsyml, FileStorage::WRITE);
@@ -423,10 +492,15 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 	// or up-down camera arrangements
 	bool isVerticalStereo = fabs(P2.at<double>(1, 3)) > fabs(P2.at<double>(0, 3));
 
+	bool showRectified = true;
+
 	// COMPUTE AND DISPLAY RECTIFICATION
 	if (!showRectified)
 		return;
 
+	bool useCalibrated = true;
+
+	/*
 	Mat rmap[2][2];
 	// IF BY CALIBRATED (BOUGUET'S METHOD)
 	if (useCalibrated)
@@ -454,6 +528,9 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 		P1 = cameraMatrix[0];
 		P2 = cameraMatrix[1];
 	}
+	*/
+
+	// 保存相机的外部参数
 	fs.open(storextrinsicsyml, FileStorage::WRITE);
 	if (fs.isOpened())
 	{
@@ -463,9 +540,15 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 	else
 		cout << "Error: can not save the extrinsic parameters\n";
 
+	cout << "save extrinsic params successfully!" << endl;
+
+#if 0
 	//Precompute maps for cv::remap()
+	Mat rmap[2][2];
 	initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
 	initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
+
+	cout << "init undistort rectify map successfully!" << endl;
 
 	Mat canvas;
 	double sf;
@@ -485,6 +568,7 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 		canvas.create(h * 2, w, CV_8UC3);
 	}
 	/*************************************************************************************/
+
 
 	/***************************************************************************************/
 	for (i = 0; i < nimages; i++)
@@ -517,8 +601,7 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 		if (c == 27 || c == 'q' || c == 'Q')
 			break;
 	}
-
-
+#endif
 }
 
 void ImgRectified(const std::string& intrinsic_filename, const std::string& extrinsic_filename, 
