@@ -1,10 +1,8 @@
 #include "StereoReconstruct.h"
+#include "FileManager.h"
 
 #define PHASE_THRESHOLD  0.01
 #define BLOCK_THRESHOLD  0.3
-
-const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
-const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
 
 void find_featurepionts(Mat& leftphase, Mat& rightphase,
 							vector<Point2f>& leftkeypoint, vector<Point2f>& rightkeypoint)
@@ -162,11 +160,11 @@ void find_featureSAD(Mat& leftphase, Mat& rightphase)
 	convertScaleAbs(leftphase, leftimg8);
 	convertScaleAbs(rightphase, rightimg8);
 
-	//     imshow("leftimg8", leftimg8);
-	//     imshow("rightimg8", rightimg8);
-	//     waitKey(0);
-	//     cvConvertScale(&leftphase, leftimg8, 255.0, 0.0);
-	//     cvConvertScale(&rightphase, rightimg8, 255.0, 0.0);
+	// imshow("leftimg8", leftimg8);
+	// imshow("rightimg8", rightimg8);
+	// waitKey(0);
+	// cvConvertScale(&leftphase, leftimg8, 255.0, 0.0);
+	// cvConvertScale(&rightphase, rightimg8, 255.0, 0.0);
 
 	Size img_size = leftphase.size();
 	Rect roi1, roi2;

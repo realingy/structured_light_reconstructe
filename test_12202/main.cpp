@@ -7,19 +7,14 @@
 #include "CalPhase.h"
 #include "PointcloudProcess.h"
 #include "StereoReconstruct.h"
+#include "FileManager.h"
 
 using namespace cv;
 using namespace std;
 
-static void savePhase(const char* filename, Mat& mat);
-static void savepnts3D(const char* filename,  Mat& mat);
-
-const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
-const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
-
 int main(int argc, char **argv)
 {
-	/***********************Stereo calibration*****************************************/
+	/*******************************Stereo calibration*****************************************/
 #if 0
 	const string Calibimagelistfn = "../mydata/input/stereo_calib_images.xml";
 
@@ -49,10 +44,10 @@ int main(int argc, char **argv)
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
 #endif
 
-	/*******************************calculate unwrapped phase*****************************************/
+	/*******************************Calculate unwrapped phase*****************************************/
 #if 1
-	// calculate unwrapped phase
-	// 计算解包相位
+	// Calculate unwrapped phase
+
 	const char* wrapped_phaseleft_txt = "../mydata/output/wrapped_phase_left.txt";
 	const char* wrapped_phaseright_txt = "../mydata/output/wrapped_phase_right.txt";
 	const char* unwrapped_phaseleft_txt = "../mydata/output/unwrapped_phase_left.txt";
@@ -60,24 +55,20 @@ int main(int argc, char **argv)
 	const char* Rect_images_left = "../mydata/input/Rect_images_left.xml";
 	const char* Rect_images_right = "../mydata/input/Rect_images_right.xml";
 
-	// 计算左图的包裹相位
+	/*************************Calculate left phase***********************************/
 	Mat wrapped_phase_left = CalWrappedPhase(Rect_images_left).clone();
 
 	if (wrapped_phaseleft_txt)
 	{
-		// 存储左图的包裹相位
 		printf("storing the wrapped_phaseleft_txt...\n");
 		savePhase(wrapped_phaseleft_txt, wrapped_phase_left);
 	}
 	cout << "Done!!!" << endl;
 
-	// 计算左图的展开相位
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
 	cout << "Phase unwrapping......" << endl;
 
-	// 格雷码解码方式计算展开相位
 	UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
-	// 古典算法计算展开相位
 	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
 
 	cout << "Done!!!" << endl;
@@ -88,7 +79,6 @@ int main(int argc, char **argv)
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
 	}
 	cout << "Done!!!" << endl;
-
 
 	/*************************Calculate right phase***********************************/
 	Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
@@ -114,14 +104,14 @@ int main(int argc, char **argv)
 	}
 	cout << "Done!!!" << endl;
 
-	//imwrite("../mydata/filterphaseright.jpg", filterphase);
-	imwrite("../myimages/unwrapped_phase_left.jpg", unwrapped_phase_left);
-	imwrite("../myimages/unwrapped_phase_right.jpg", unwrapped_phase_right);
-	//imshow("filter_phase", unwrapped_phase_right);
+	printf("storing the unwrapped phase image...");
+	imwrite(unwrappedphaseimageleft, unwrapped_phase_left);
+	imwrite(unwrappedphaseimageright, unwrapped_phase_right);
 
+	cout << "Calculate phase successfully!" << endl;
 #endif
 
-	/*****************************stereo matching and 3D reconstruction************************************/
+	/*****************************Stereo matching and 3D reconstruction************************************/
 #if 1
 	vector<Point2f> leftfeaturepoints, rightfeaturepoints;
 	cout << "\n=============================" << endl;
@@ -145,8 +135,8 @@ int main(int argc, char **argv)
 	fs["P1"] >> P1;
 	fs["P2"] >> P2;
 
-	cout << "\n==> P1:\n" << P1 << endl;
-	cout << "\n==> P2:\n" << P2 << endl;
+	//cout << "\n==> P1:\n" << P1 << endl;
+	//cout << "\n==> P2:\n" << P2 << endl;
 
 	cout << "\n=============================" << endl;
 	cout << "Calculate points3D......" << endl;
@@ -162,7 +152,7 @@ int main(int argc, char **argv)
 
 #endif    
 
-	/*****************************surface reconstruction************************************/
+	/*****************************Surface reconstruction************************************/
 #if 0
     cout << "\n=============================" << endl;
 	cout << "surface reconstruction......" <<endl;
@@ -176,50 +166,8 @@ int main(int argc, char **argv)
     return 0;
 }
 
-//保存相位
-static void savePhase(const char* filename, Mat& mat)
-{
-    FILE* fp = fopen(filename, "wt");
-    for(int y = 0; y < mat.rows; y++)
-    {
-        float *pixel_phase_data = mat.ptr<float>(y);
-	
-        for(int x = 0; x < mat.cols; x++)
-        {
-            float point = *pixel_phase_data++;
-            fprintf(fp, "%f \t", point);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
 
-//保存3D点
-static void savepnts3D(const char* filename, Mat& mat)
-{
-    FILE* fp = fopen(filename, "wt");
-    
-    float *pnts3D_row1 = mat.ptr<float>(0);	
-    float *pnts3D_row2 = mat.ptr<float>(1);
-    float *pnts3D_row3 = mat.ptr<float>(2);
-    float *pnts3D_row4 = mat.ptr<float>(3);
-    int pixelsvel; 
-    
-    for(int y = 0; y < mat.cols; y++)
-    {
-		float pnts3D_data4 = *(pnts3D_row4 + y);
-      
-		float pnts3D_data1 = *(pnts3D_row1 + y) / pnts3D_data4;
-		float pnts3D_data2 = *(pnts3D_row2 + y) / pnts3D_data4;
-		float pnts3D_data3 = *(pnts3D_row3 + y) / pnts3D_data4;
 
-		fprintf(fp, "%f   %f   %f \n", pnts3D_data1, pnts3D_data2, pnts3D_data3);
-      
-		pixelsvel = (int)(225*pnts3D_data3 / 1900.00);
-    }
-
-    fclose(fp);
-}
 
 
 
