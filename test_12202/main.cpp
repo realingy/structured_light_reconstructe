@@ -153,7 +153,6 @@ int main(int argc, char **argv)
 	cout << "=== " << unwrapped_phase_right.type() << endl;
 	*/
 
-	/***********************立体匹配和三维重建*****************************************/
 #if 1
 	// stereo matching and 3D reconstruction
 
@@ -161,8 +160,8 @@ int main(int argc, char **argv)
 	cout << "\n=============================" << endl;
 	cout << "Calculate feature points......" << endl;
 
-	find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
-	// find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+	// find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+	find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureBlock(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	// find_featureSAD(unwrapped_phase_left, unwrapped_phase_right);
 
@@ -194,13 +193,13 @@ int main(int argc, char **argv)
     savepnts3D(pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
 
-	cout << "===================\n";
-	return 0;
+	cout << "Save poind cloud successfully!\n";
+
 #endif    
 
 	/*********************surface reconstruction************************************/
 	/*********************表面重建*******************************/
-#if 1  // surface reconstruction
+#if 0  // surface reconstruction
     cout << "\n=============================" << endl;
 	cout << "surface reconstruction......" <<endl;
 	// filterpointcloud();
