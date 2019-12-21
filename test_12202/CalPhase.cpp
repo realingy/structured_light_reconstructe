@@ -21,8 +21,6 @@ static bool readString( const string& filename, vector<string>& l)
     return true;
 }
 
-// 包裹相位计算
-// 输入：极线校正以后的调制图像
 Mat CalWrappedPhase(const std::string &Rect_images)
 {
     vector<string> imagelist;
@@ -47,14 +45,11 @@ Mat CalWrappedPhase(const std::string &Rect_images)
     int width = img1.cols;  //列数
     Mat wrapped_phase(Size(width, height), CV_32FC1, Scalar(0.0));
     
-    cout << "\n=============================" <<endl;
-    cout << "channels: "  << img1.channels() <<endl;
-    cout << "height: " << height << ", width: " << width <<endl;
+    //cout << "channels: "  << img1.channels() <<endl;
+    //cout << "height: " << height << ", width: " << width <<endl;
 
-    cout << "Calculate warpped phase......" <<endl;
-    
-    clock_t start=0, end=0;
-    start = clock();  //开始计时
+    //clock_t start=0, end=0;
+    //start = clock();  //开始计时
 
 	for(int i=0; i < height; i++)
     {
@@ -71,12 +66,11 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 		}
 	}
     
-    end = clock(); //计时结束
-	cout << "Done!!!" <<endl;
+    //end = clock(); //计时结束
+	//cout << "Done!!!" <<endl;
     
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    printf("Done in %.2lf seconds.\n", elapsed_secs);
-    cout << "=============================\n" << endl;
+	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+    //printf("Done in %.2lf seconds.\n", elapsed_secs);
     
 	return wrapped_phase;
 }
@@ -92,7 +86,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 		float fprephase = *wrapped_phase_data;
 		*unwrapped_phase_data = fprephase;
       
-		for(int x = 1; x < src.cols; x++)     //warning 循环次数！！！！！
+		for(int x = 1; x < src.cols; x++)
 		{
 			wrapped_phase_data++;
 			unwrapped_phase_data++;
@@ -112,7 +106,6 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 
 void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	// 相位序列
 	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
 
 	vector<string> imagelist;
@@ -122,30 +115,19 @@ void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images
 		cout << "can not open " << Rect_images << " or the string list is empty" << endl;
 	}
   
-	// 3张多频调制图像和4张相移调制图像
 	if(imagelist.size() != 10)
 	{
 		cout << "the number of images less ten" <<endl;
 	}
 
-	// 读取3张多频调制图像
 	Mat img1 = imread(imagelist[0], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img2 = imread(imagelist[1], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img3 = imread(imagelist[2], CV_LOAD_IMAGE_GRAYSCALE);
 
 }
 
-/***********************************************************************
-基于格雷码的展开相位计算，得到表面采样点条纹级次k，绝对相位（展开相位）
-输入：
-	src: 包裹相位
-	Rect_images: 极线校正（立体校正）后的图像
-输出：
-	dst：展开相位
-***********************************************************************/
 void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	// 相位序列
 	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
   
 	vector<string> imagelist;
@@ -169,11 +151,9 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	Mat img5 = imread(imagelist[4], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img6 = imread(imagelist[5], CV_LOAD_IMAGE_GRAYSCALE);
   
-	// 相位序列Mat
 	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
   
-	// 二值化阈值
-	uchar thresh = 130; // 0-255 model21:200   model1:127
+	uchar thresh = 130; // model1:127
 
 	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
 	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
@@ -182,20 +162,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	threshold(img4, img4, thresh, 255, CV_THRESH_BINARY);
 	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
 	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
-
-	/*
-	for (size_t i = 0; i < width; i++)
-	{
-		for (size_t j = 0; j < height; j++)
-		{
-			uchar tt = 0;
-			if(img2.at<uchar>(i, j) > tt)
-			{
-				cout << "not empty image\n";
-			}
-		}
-	}
-	*/
 
 	if (showThreshold)
 	{
@@ -217,15 +183,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	bitwise_xor(img3, img4, img4);
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
-
-	/*
-	cv::imwrite("../myimages/bin1.bmp", img1);
-	cv::imwrite("../myimages/bin2.bmp", img2);
-	cv::imwrite("../myimages/bin3.bmp", img3);
-	cv::imwrite("../myimages/bin4.bmp", img4);
-	cv::imwrite("../myimages/bin5.bmp", img5);
-	cv::imwrite("../myimages/bin6.bmp", img6);
-	*/
 
 #if 1
 	int x,y;
@@ -252,8 +209,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
   
 	medianBlur(phase_series, phase_series, 9); //中值滤波
 
-	//cv::imwrite("../myimages/phase_series.bmp", phase_series);
-  
 	for(y=0; y < height; y++)
 	{
 		for(x=0; x < width; x++)
@@ -363,7 +318,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
   
 	if(series_phase_txt)
 	{
-		printf("storing the series_phase_txt...");
 		FILE* fp = fopen(series_phase_txt, "wt");
     
 		for(int y = 0; y < phase_series.rows; y++)

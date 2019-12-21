@@ -19,7 +19,7 @@ void savePhase(const char* filename, cv::Mat& mat)
 }
 
 //±£´æ3Dµã
-void savepnts3D(const char* filename, cv::Mat& mat)
+void savepnts3D(const char *filename, cv::Mat& mat)
 {
 	FILE* fp = fopen(filename, "wt");
 

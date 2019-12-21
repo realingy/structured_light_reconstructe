@@ -16,9 +16,10 @@ int main(int argc, char **argv)
 {
 	/*******************************Stereo calibration*****************************************/
 #if 0
+	cout << "\n======================================================" << endl;
 	const string Calibimagelistfn = "../mydata/input/stereo_calib_images.xml";
 
-	cout << "Stereo Calibration......" << endl;
+	cout << ">>>1 Stereo Calibration" << endl;
 
 	//clock_t start=0, end=0;
 	//start = clock();  //开始计时     
@@ -37,9 +38,11 @@ int main(int argc, char **argv)
 #endif
 
 #if 0
-	// images Rectified......
+	cout << "\n======================================================" << endl;
+	// images Rectified
+	cout << ">>>2 Image Rectify" << endl;
 	const string Phaseimageslistfn = "../mydata/input/phase_images.xml";
-	const string Rectifiedimageslistfn = "../mydata/input/Rect_phase_images.xml";
+	const string Rectifiedimageslistfn = "../mydata/input/Rect_images.xml";
 
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
 #endif
@@ -47,6 +50,9 @@ int main(int argc, char **argv)
 	/*******************************Calculate unwrapped phase*****************************************/
 #if 1
 	// Calculate unwrapped phase
+	
+	cout << "\n======================================================" << endl;
+	cout << ">>>3 Calculate phase" << endl;
 
 	const char* wrapped_phaseleft_txt = "../mydata/output/wrapped_phase_left.txt";
 	const char* wrapped_phaseright_txt = "../mydata/output/wrapped_phase_right.txt";
@@ -55,74 +61,71 @@ int main(int argc, char **argv)
 	const char* Rect_images_left = "../mydata/input/Rect_images_left.xml";
 	const char* Rect_images_right = "../mydata/input/Rect_images_right.xml";
 
-	/*************************Calculate left phase***********************************/
+	//Calculate left phase
+	cout << "\n[1] Calculate left phase" << endl;
+
 	Mat wrapped_phase_left = CalWrappedPhase(Rect_images_left).clone();
 
 	if (wrapped_phaseleft_txt)
 	{
-		printf("storing the wrapped_phaseleft_txt...\n");
+		cout << "storing the wrapped_phaseleft_txt" << endl;
 		savePhase(wrapped_phaseleft_txt, wrapped_phase_left);
 	}
-	cout << "Done!!!" << endl;
 
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
-	cout << "Phase unwrapping......" << endl;
+	cout << "Phase unwrapping..." << endl;
 
 	UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
 	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
 
-	cout << "Done!!!" << endl;
-
 	if (unwrapped_phaseleft_txt)
 	{
-		printf("storing the unwrapped_phaseleft_txt...");
+		cout << "storing the unwrapped_phaseleft_txt" << endl;
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
 	}
-	cout << "Done!!!" << endl;
+
+	cout << "storing the unwrapped_phase_image_left" << endl;
+	imwrite(unwrapped_phase_image_left, unwrapped_phase_left);
 
 	/*************************Calculate right phase***********************************/
+	cout << "\n[2] Calculate right phase" << endl;
 	Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
 	Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));  // warning SIZE(cols,rows)!!!
 
 	if (wrapped_phaseright_txt)
 	{
-		printf("storing the wrapped_phaseright_txt...");
+		cout << "storing the wrapped_phaseright_txt" << endl;
 		savePhase(wrapped_phaseright_txt, wrapped_phase_right);
 	}
-	cout << "Done!!!" << endl;
 
-	cout << "Phase unwrapping......" << endl;
+	cout << "Phase unwrapping..." << endl;
 
 	UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
 	// UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
 
-	cout << "Done!!!" << endl;
 	if (unwrapped_phaseright_txt)
 	{
-		printf("storing the unwrapped_phaseright_txt...");
+		cout << "storing the unwrapped_phaseright_txt" << endl;
 		savePhase(unwrapped_phaseright_txt, unwrapped_phase_right);
 	}
-	cout << "Done!!!" << endl;
 
-	printf("storing the unwrapped phase image...");
-	imwrite(unwrappedphaseimageleft, unwrapped_phase_left);
-	imwrite(unwrappedphaseimageright, unwrapped_phase_right);
+	cout << "storing the unwrapped_phase_image_right" << endl;
+	imwrite(unwrapped_phase_image_right, unwrapped_phase_right);
 
-	cout << "Calculate phase successfully!" << endl;
+	cout << endl << "Calculate phase successful!" << endl;
 #endif
 
 	/*****************************Stereo matching and 3D reconstruction************************************/
 #if 1
 	vector<Point2f> leftfeaturepoints, rightfeaturepoints;
-	cout << "\n=============================" << endl;
-	cout << "Calculate feature points......" << endl;
+	cout << "\n======================================================" << endl;
+	cout << ">>>4 Stereo match and 3D reconstruct" << endl;
+	cout << "\n[1] Calculate feature points" << endl;
 
 	// find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 
 	cout << "the number of feature: " << leftfeaturepoints.size() << endl;
-
-	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
 
 	FileStorage fs(storextrinsicsyml, FileStorage::READ);
 	if (!fs.isOpened())
@@ -138,30 +141,28 @@ int main(int argc, char **argv)
 	//cout << "\n==> P1:\n" << P1 << endl;
 	//cout << "\n==> P2:\n" << P2 << endl;
 
-	cout << "\n=============================" << endl;
-	cout << "Calculate points3D......" << endl;
+	Mat pnts3D(4, leftfeaturepoints.size(), CV_64F);
+
+	cout << "\n[2] Calculate points3D" << endl;
 	cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
-    const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
-
-    cout << "Save points3D......" <<endl;
-    savepnts3D(pnts3D_filename, pnts3D);
+    cout << "\n[3] Save points3D" <<endl;
+	const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
+    savepnts3D( pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
 
-	cout << "Save poind cloud successfully!\n";
+	cout << "Stereo match and 3D reconstruct successful!\n";
 
 #endif    
 
 	/*****************************Surface reconstruction************************************/
-#if 0
-    cout << "\n=============================" << endl;
-	cout << "surface reconstruction......" <<endl;
+	cout << "\n======================================================" << endl;
+	cout << ">>>5 Surface reconstruction" <<endl;
 	// filterpointcloud();
 	// poissonreconstruction(); // 泊松曲面重建
     
-#endif
-
-	cout << "All Done......" <<endl;
+	cout << endl << ">>>";
+	cout << "All Done" <<endl;
     
     return 0;
 }
