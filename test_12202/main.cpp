@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 	cout << "Phase unwrapping..." << endl;
 
 	UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
-	// UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
+	//UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
 
 	if (unwrapped_phaseleft_txt)
 	{
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 	cout << "Phase unwrapping..." << endl;
 
 	UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
-	// UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
+	//UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
 
 	if (unwrapped_phaseright_txt)
 	{
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 	cout << ">>>4 Stereo match and 3D reconstruct" << endl;
 	cout << "\n[1] Calculate feature points" << endl;
 
-	// find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
+	//find_featurepionts(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 	find_featurepionts_single_match(unwrapped_phase_left, unwrapped_phase_right, leftfeaturepoints, rightfeaturepoints);
 
 	cout << "the number of feature: " << leftfeaturepoints.size() << endl;
@@ -152,21 +152,20 @@ int main(int argc, char **argv)
     savepntsPCD(pnts3D);
 
 	cout << "Stereo match and 3D reconstruct successful!\n";
-
 #endif    
 
 	/*****************************Surface reconstruction************************************/
 	cout << "\n======================================================" << endl;
 	cout << ">>>5 Surface reconstruction" <<endl;
-	// filterpointcloud();
-	// poissonreconstruction(); // 泊松曲面重建
+	filterpointcloud();
+	//poissonreconstruction(); // 泊松曲面重建
     
+	cout << "\n======================================================" << endl;
 	cout << endl << ">>>";
 	cout << "All Done" <<endl;
     
     return 0;
 }
-
 
 
 
