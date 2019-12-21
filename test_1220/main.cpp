@@ -195,88 +195,10 @@ int main(int argc, char **argv)
 
     cout << "Calculate points3D......"<<endl;
 
-	/*
-	Mat R1 = (Mat_<float>(3, 3) <<
-		-0.003449992052740, 0.908392369471684,  0.418104533149851,	  
-		 0.992268580264290, 0.054980888811595, -0.111266196509893,
-		-0.124061122738460, 0.414488124016969, -0.901558890408035);
-
-	Mat T1 = (Mat_<float>(3, 1) <<
-		3.688988301573581, -4.927452164451585, 329.276493470459510 );
-
-	Mat R2 = (Mat_<float>(3, 3) <<
-		-0.005778730523496, 0.970132888506089, 0.242505226567117,
-		 0.992520961272705, 0.035135856240512, -0.116908567010947,
-		-0.121937474583672, 0.240015937481406, -0.963080267707255);
-
-	Mat T2 = (Mat_<float>(3, 1) <<
-		3.780742082249347, -4.998608845649666, 328.926407599367390);
-
-	Mat R2T;
-	cv::transpose(R2, R2T); //转置
-
-	Mat R = R1 * R2T;
-
-	// cout << "\n==> R:\n" << R << endl;
-
-	Mat T = T2 - R * T1;
-
-	// cout << "\n==> T:\n" << T << endl;
-
-	T1 = (Mat_<float>(3, 4) <<
-		1.00, 0.00, 0.00, 0.00,
-		0.00, 1.00, 0.00, 0.00,
-		0.00, 0.00, 1.00, 0.00);
-
-	T2 = (Mat_<float>(3, 4) <<
-		R.at<float>(0, 0), R.at<float>(0, 1), R.at<float>(0, 2), T.at<float>(0, 0),
-		R.at<float>(1, 0), R.at<float>(1, 1), R.at<float>(1, 2), T.at<float>(1, 0),
-		R.at<float>(2, 0), R.at<float>(2, 1), R.at<float>(2, 2), T.at<float>(2, 0));
-
-	// cout << "\n==> T1:\n" << T1 << endl;
-	// cout << "\n==> T2:\n" << T2 << endl;
-	*/
-
 	// 通过三角测量计算三维坐标(基于世界坐标和图像坐标的转换关系)
     // cv::triangulatePoints(T1, T2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
-	/*
-	Mat R = (Mat_<float>(3, 3) <<
-		0.9826737, -0.020387046, -0.1842189,
-		0.020622084, 0.99978715, -0.00064015388,
-		0.18419276, -0.0031699166, 0.982885);
-
-	Mat T = (Mat_<float>(3, 1) <<
-		60.714165, 0.062507629, 4.5903931);
-
-    Mat cameraMatrix[2], distCoeffs[2]; //内参矩阵、畸变向量
-    Mat R1, R2, P1, P2, Q;
-    Rect validRoi[2];
-	Size imageSize;
-
-	cameraMatrix[0] = (Mat_<float>(3, 3) <<
-			0.9826737, -0.020387046, -0.1842189,
-			0.020622084, 0.99978715, -0.00064015388,
-			0.18419276, -0.0031699166, 0.982885);
-
-	distCoeffs[0] = (Mat_<float>(3, 1) << 
-			1.00, 1.00, 1.00);
-
-	cameraMatrix[1] = (Mat_<float>(3, 3) <<
-			0.9826737, -0.020387046, -0.1842189,
-			0.020622084, 0.99978715, -0.00064015388,
-			0.18419276, -0.0031699166, 0.982885);
-
-	distCoeffs[1] = (Mat_<float>(3, 1) << 
-			1.00, 1.00, 1.00);
-
-	stereoRectify(cameraMatrix[0], distCoeffs[0],
-		cameraMatrix[1], distCoeffs[1],
-		imageSize, R, T, R1, R2, P1, P2, Q,
-		0, -1, imageSize, &validRoi[0], &validRoi[1]);
-	*/
-
-	// P1，P2是两个相机相对于校正平面的转换矩阵，也可以使用不做极线校正的矩阵
+	// P1，P2是两个相机相对于校正平面的转换矩阵
     cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
     const char* pnts3D_filename = "../data/output/pnts3D.txt";
