@@ -42,15 +42,9 @@ Mat CalWrappedPhase(const std::string &Rect_images)
     Mat img4 = imread(imagelist[9], CV_LOAD_IMAGE_GRAYSCALE);
     
     int height = img1.rows;  //行数
-    int width = img1.cols;  //列数
+    int width = img1.cols;   //列数
     Mat wrapped_phase(Size(width, height), CV_32FC1, Scalar(0.0));
     
-    //cout << "channels: "  << img1.channels() <<endl;
-    //cout << "height: " << height << ", width: " << width <<endl;
-
-    //clock_t start=0, end=0;
-    //start = clock();  //开始计时
-
 	for(int i=0; i < height; i++)
     {
 		uchar *img1_data = img1.ptr<uchar>(i);
@@ -65,12 +59,6 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 											((float)(*img1_data++) - (float)(*img3_data++)));
 		}
 	}
-    
-    //end = clock(); //计时结束
-	//cout << "Done!!!" <<endl;
-    
-	//double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    //printf("Done in %.2lf seconds.\n", elapsed_secs);
     
 	return wrapped_phase;
 }
@@ -106,7 +94,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 
 void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	const char * phase_series_txt = "./source_data/output/phase_series.txt";
+	const char * phase_series_txt = "../result/phase_series.txt";
   
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);
@@ -196,7 +184,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	}
 #endif
 
-  
 	if(phase_series_txt)
 	{
 		FILE* fp = fopen(phase_series_txt, "wt");

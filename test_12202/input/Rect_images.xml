@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<imagelist>
+"../input/images/Rectify_L/Graycodeleft01.bmp"
+"../input/images/Rectify_R/Graycoderight01.bmp"
+"../input/images/Rectify_L/Graycodeleft02.bmp"
+"../input/images/Rectify_R/Graycoderight02.bmp"
+"../input/images/Rectify_L/Graycodeleft03.bmp"
+"../input/images/Rectify_R/Graycoderight03.bmp"
+"../input/images/Rectify_L/Graycodeleft04.bmp"
+"../input/images/Rectify_R/Graycoderight04.bmp"
+"../input/images/Rectify_L/Graycodeleft05.bmp"
+"../input/images/Rectify_R/Graycoderight05.bmp"
+"../input/images/Rectify_L/Graycodeleft06.bmp"
+"../input/images/Rectify_R/Graycoderight06.bmp"
+"../input/images/Rectify_L/PhaseShiftleft01.bmp"
+"../input/images/Rectify_R/PhaseShiftright01.bmp"
+"../input/images/Rectify_L/PhaseShiftleft02.bmp"
+"../input/images/Rectify_R/PhaseShiftright02.bmp"
+"../input/images/Rectify_L/PhaseShiftleft03.bmp"
+"../input/images/Rectify_R/PhaseShiftright03.bmp"
+"../input/images/Rectify_L/PhaseShiftleft04.bmp"
+"../input/images/Rectify_R/PhaseShiftright04.bmp"
+</imagelist>
+</opencv_storage>

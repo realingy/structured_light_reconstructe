@@ -18,7 +18,7 @@
 #include <pcl/surface/mls.h>
 #include <pcl/surface/poisson.h>
 
-void savepntsPCD(cv::Mat& pnts);
+void savepointcloud(cv::Mat& pnts);
 void filterpointcloud(void);
 void poissonreconstruction(void);
 
