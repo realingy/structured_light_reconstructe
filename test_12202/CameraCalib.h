@@ -13,6 +13,6 @@ void StereoCalibration(const std::string &imagelistfn, const std::string &storin
 void ImgRectified(const std::string& intrinsic_filename, const std::string& extrinsic_filename, 
 		  const std::string& imageListfn, const std::string& RectimageListfn);
 
-// 立体标定加相机位置校正
-void StereoCalibration2(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml);
+// 立体标定加相机位置校正(基础Matlab的标定结果)
+void StereoCalibrationByParams(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml);
 #endif

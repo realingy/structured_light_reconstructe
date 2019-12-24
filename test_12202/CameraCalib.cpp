@@ -158,7 +158,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 //******************************************************//  
     cameraMatrix[0] = Mat::eye(3, 3, CV_64F);  
     cameraMatrix[1] = Mat::eye(3, 3, CV_64F);
-    Mat R, T, E, F;
+    Mat R, T, E, F; //E：本征矩阵， F：基础矩阵
 	//R/T: 第一个相机和第二个相机的相对位置 
 
 	// 立体标定，得到相机的内参【内参矩阵(焦距、主点)和畸变系数矩阵】
@@ -197,7 +197,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
         {
             imgpt[k] = Mat(imagePoints[k][i]);
             undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
-            computeCorrespondEpilines(imgpt[k], k+1, F, lines[k]);
+            computeCorrespondEpilines(imgpt[k], k+1, F, lines[k]); //极线校正
         }
         for( j = 0; j < npt; j++ )
         {
@@ -240,35 +240,35 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   0, -1, imageSize, &validRoi[0], &validRoi[1]);    
                  
-//	   0, -1, imageSize, &validRoi[0], &validRoi[1]);
-//     fs.open(storextrinsicsyml, FileStorage::WRITE);
-//     if( fs.isOpened() )
-//     {
-//         fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
-//         fs.release();
-//     }
-//     else
-//         cout << "Error: can not save the extrinsic parameters\n";
+	//0, -1, imageSize, &validRoi[0], &validRoi[1]);
+	//fs.open(storextrinsicsyml, FileStorage::WRITE);
+	//if( fs.isOpened() )
+	//{
+	//   fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
+	//   fs.release();
+	//}
+	//else
+	//	 cout << "Error: can not save the extrinsic parameters\n";
 
-// OpenCV can handle left-right
-// or up-down camera arrangements
+	// OpenCV can handle left-right
+	// or up-down camera arrangements
     bool isVerticalStereo = fabs(P2.at<double>(1, 3)) > fabs(P2.at<double>(0, 3));
     
-// COMPUTE AND DISPLAY RECTIFICATION
+	// COMPUTE AND DISPLAY RECTIFICATION
     if( !showRectified )
         return;
 
     Mat rmap[2][2];
-// IF BY CALIBRATED (BOUGUET'S METHOD)
+	// IF BY CALIBRATED (BOUGUET'S METHOD)
     if( useCalibrated )
     {
         // we already computed everything
     }
-// OR ELSE HARTLEY'S METHOD
+	// OR ELSE HARTLEY'S METHOD
     else
- // use intrinsic parameters of each camera, but
- // compute the rectification transformation directly
- // from the fundamental matrix
+	// use intrinsic parameters of each camera, but
+	// compute the rectification transformation directly
+	// from the fundamental matrix
     {
         vector<Point2f> allimgpt[2];
         for( k = 0; k < 2; k++ )
@@ -368,7 +368,7 @@ void StereoCalibration(const std::string &imagelistfn, const std::string &storin
 }
 
 // 立体标定加相机位置校正
-void StereoCalibration2(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml)
+void StereoCalibrationByParams(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml)
 {
     Mat cameraMatrix[2], distCoeffs[2];
 	for (size_t i = 0; i < 2; i++)
