@@ -104,31 +104,9 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 	}
 }
 
-void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
-{
-	const char * series_phase_txt = "./source_data/output/series_phase_model1.txt";
-
-	vector<string> imagelist;
-	bool ok = readString(Rect_images, imagelist);
-	if(!ok || imagelist.empty())
-	{
-		cout << "can not open " << Rect_images << " or the string list is empty" << endl;
-	}
-  
-	if(imagelist.size() != 10)
-	{
-		cout << "the number of images less ten" <<endl;
-	}
-
-	Mat img1 = imread(imagelist[0], CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img2 = imread(imagelist[1], CV_LOAD_IMAGE_GRAYSCALE);
-	Mat img3 = imread(imagelist[2], CV_LOAD_IMAGE_GRAYSCALE);
-
-}
-
 void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	const char * series_phase_txt = "./source_data/output/series_phase_model1.txt";
+	const char * phase_series_txt = "./source_data/output/phase_series.txt";
   
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);
@@ -174,7 +152,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 			resize(imgshow, imgshow, Size(), sf, sf); //调整图像大小640 x 640
 
 			// imshow("imgshow", imgshow);
-			cv::imwrite("../myimages/imgshow.bmp", imgshow);
 		}
 	}
 
@@ -215,110 +192,14 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 		{
 			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
 			dst.at<float>(y,x) = phase_series.at<uchar>(y,x)*2*CV_PI + src.at<float>(y,x);
-#if 0     
-			if(x!=0)
-			{
-				pre_unphase = dst.at<float>(y,x-1);
-				cur_unphase = dst.at<float>(y,x);
-				pre_series = phase_series.at<uchar>(y,x-1);
-				cur_series = phase_series.at<uchar>(y,x);
-				if((pre_series!=0)&&(cur_series !=0))
-				{
-					// for(int count = 0; count < 3; count++)
-					// {
-					if(cur_unphase - pre_unphase > CV_PI)
-					{
-						dst.at<float>(y,x) = dst.at<float>(y,x) - 2*CV_PI;
-						// cur_unphase = dst.at<float>(y,x);
-					}
-					else if(pre_unphase - cur_unphase > CV_PI)
-					{
-						dst.at<float>(y,x) = dst.at<float>(y,x) + 2*CV_PI;
-						// cur_unphase = dst.at<float>(y,x);
-					}
-					// }
-				}	
-			}
-#endif
 		}
 	}
 #endif
 
-#if 0
-	for(int y=0; y < img1.rows; y++)
-	{
-		uchar *img1_ptr = img1.ptr<uchar>(y);
-		uchar *img2_ptr = img2.ptr<uchar>(y);
-		uchar *img3_ptr = img3.ptr<uchar>(y);
-		uchar *img4_ptr = img4.ptr<uchar>(y);
-		uchar *img5_ptr = img5.ptr<uchar>(y);
-		uchar *img6_ptr = img6.ptr<uchar>(y);
-		float *wrapped_phase_ptr = src.ptr<float>(y);
-		float *unwrapped_phase_ptr = dst.ptr<float>(y);
-		uchar pre_series,cur_series;
-    
-		for(int x=0; x < img1.cols; x++)
-		{      
-			phase_series.at<uchar>(y,x) = ((int)(*img1_ptr++))*32 + ((int)(*img2_ptr++))*16
-                                      + ((int)(*img3_ptr++))*8 + ((int)(*img4_ptr++))*4 
-                                      + ((int)(*img5_ptr++))*2 + ((int)(*img6_ptr++))*1; //计算相位级数
-			if(x!=0)
-			{
-				pre_series = phase_series.at<uchar>(y,x-1); 
-				cur_series = phase_series.at<uchar>(y,x);
-				if(((cur_series - pre_series) >= 2) && (pre_series != 0))
-					phase_series.at<uchar>(y,x) =  pre_series + 1;
-				if(((pre_series - cur_series) > 0) && (cur_series != 0))
-					phase_series.at<uchar>(y,x) =  pre_series;
-			}
-       
-			*unwrapped_phase_ptr = phase_series.at<uchar>(y,x)*2*CV_PI + *wrapped_phase_ptr; //计算绝对相位
-       
-			if(x!=0)
-			{
-				float pre_unphase = *(--unwrapped_phase_ptr);
-				float cur_unphase = *(++unwrapped_phase_ptr);
-				pre_series =  phase_series.at<uchar>(y,x-1);
-				cur_series =  phase_series.at<uchar>(y,x);
-	 
-				if((pre_series!=0)&&(cur_series !=0))
-				{
-					for(int count = 0; count < 3; count++)
-					{
-						if(cur_unphase - pre_unphase > CV_PI)
-						{
-							*unwrapped_phase_ptr = *unwrapped_phase_ptr - 2*CV_PI;
-							cur_unphase = *unwrapped_phase_ptr;
-						}
-						if(cur_unphase - pre_unphase < -CV_PI)
-						{
-							*unwrapped_phase_ptr = *unwrapped_phase_ptr + 2*CV_PI;
-							cur_unphase = *unwrapped_phase_ptr;
-						}
-					}
-				}
-			}
-   
-			//    phase_series_ptr++;
-			unwrapped_phase_ptr++;
-			wrapped_phase_ptr++;
-		}
-	}
-#endif
-
-//   for(int y=0; y<phase_series.rows;y++)
-//   {
-//      uchar *phase_series_ptr = phase_series.ptr<uchar>(y);
-//      for(int x=0; x<phase_series.cols;x++)
-//      {
-//        if(y==560 && (x>0) && (x<1000))
-// 	 cout << (int)*phase_series_ptr++ <<endl;
-//      }
-//   }
   
-	if(series_phase_txt)
+	if(phase_series_txt)
 	{
-		FILE* fp = fopen(series_phase_txt, "wt");
+		FILE* fp = fopen(phase_series_txt, "wt");
     
 		for(int y = 0; y < phase_series.rows; y++)
 		{
