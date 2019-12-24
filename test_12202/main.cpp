@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 
 	/*****************************Surface reconstruction************************************/
 	cout << "\n======================================================" << endl;
-	cout << ">>>5 Surface reconstruction" <<endl;
+	cout << ">>>5 Point cloud filte and Surface reconstruction" <<endl;
 	filterpointcloud();
 	//poissonreconstruction(); // 泊松曲面重建
     
