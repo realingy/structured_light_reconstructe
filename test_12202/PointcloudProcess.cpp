@@ -88,17 +88,7 @@ void filterpointcloud(void)
 	std::cout << "Pointcloud after filtering: " << cloud_filtered->width*cloud_filtered->height << "data points" <<endl;
 #endif
 
-	/****************************statistical filter ************************************/
 #if 0
-	pcl::StatisticalOutlierRemoval<pcl::PointXYZ> st;
-	st.setInputCloud(cloud);
-	st.setMeanK(50);
-	st.setStddevMulThresh(1.0);
-	st.filter(*cloud_filtered);
-
-	std::cout << "Pointcloud after filtering: " << cloud_filtered->width*cloud_filtered->height << "data points" <<endl;
-#endif
-
 	/*************************resampling*****************************/
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree_mls(new pcl::search::KdTree<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointNormal> mls_points;
@@ -145,6 +135,7 @@ void filterpointcloud(void)
 	gp3.setInputCloud(cloud_with_normals);
 	gp3.setSearchMethod(tree2);
 	gp3.reconstruct(triangles);
+#endif
   
 	/*
 	std::vector<int> parts = gp3.getPartIDs();
@@ -160,7 +151,6 @@ void filterpointcloud(void)
 		viewer->spinOnce(100);
 	}
 	*/
-
 }
 
 

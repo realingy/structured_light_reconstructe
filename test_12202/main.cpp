@@ -4,7 +4,7 @@
 #include <time.h>
 #include <string>
 #include "CameraCalib.h"
-#include "CalPhase.h"
+#include "PhaseProcess.h"
 #include "PointcloudProcess.h"
 #include "StereoReconstruct.h"
 #include "FileManager.h"
@@ -75,8 +75,7 @@ int main(int argc, char **argv)
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
 	cout << "Phase unwrapping..." << endl;
 
-	UnwrappedPhaseGraycodeMethod(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
-	//UnwrappedPhaseClassicMethod(wrapped_phase_left, unwrapped_phase_left);
+	UnwrappedPhaseGraycode(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
 
 	if (unwrapped_phaseleft_txt)
 	{
@@ -100,8 +99,7 @@ int main(int argc, char **argv)
 
 	cout << "Phase unwrapping..." << endl;
 
-	UnwrappedPhaseGraycodeMethod(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
-	//UnwrappedPhaseClassicMethod(wrapped_phase_right, unwrapped_phase_right);
+	UnwrappedPhaseGraycode(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
 
 	if (unwrapped_phaseright_txt)
 	{

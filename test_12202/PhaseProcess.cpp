@@ -1,10 +1,8 @@
-#include "CalPhase.h"
+#include "PhaseProcess.h"
 #include "FileManager.h"
 
 using namespace cv;
 using namespace std;
-
-#define showThreshold false 
 
 static bool readString( const string& filename, vector<string>& l)
 {
@@ -63,36 +61,7 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 	return wrapped_phase;
 }
 
-void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
-{
-	for(int y = 0; y < src.rows; y++)
-    {
-		int k1 = 0, k2 = 0;
-		float *wrapped_phase_data = src.ptr<float>(y);
-		float *unwrapped_phase_data = dst.ptr<float>(y);
-      
-		float fprephase = *wrapped_phase_data;
-		*unwrapped_phase_data = fprephase;
-      
-		for(int x = 1; x < src.cols; x++)
-		{
-			wrapped_phase_data++;
-			unwrapped_phase_data++;
-			if(abs((*wrapped_phase_data)-fprephase) <= CV_PI)
-				k2 = k1;
-			else if(*wrapped_phase_data - fprephase < -CV_PI)
-				k2 = k1 + 1;
-			else if(*wrapped_phase_data - fprephase > CV_PI)
-				k2 = k1 - 1;
-	
-			fprephase = *wrapped_phase_data;
-			*unwrapped_phase_data = 2*CV_PI*k2 + *wrapped_phase_data;	
-			k1 = k2;
-		}
-	}
-}
-
-void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
+void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 {
 	const char * phase_series_txt = "../result/phase_series.txt";
   
@@ -119,9 +88,8 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
   
 	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
   
-	uchar thresh = 130; // model1:127
+	uchar thresh = 130;
 
-	//threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
 	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
 	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
 	threshold(img3, img3, thresh, 255, CV_THRESH_BINARY);
@@ -129,27 +97,12 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
 	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
 
-	if (showThreshold)
-	{
-		cout << "show threshold" << endl;
-		for (int k = 0; k < 6; k++)
-		{
-			Mat imgshow = imread(imagelist[k], CV_LOAD_IMAGE_GRAYSCALE);
-			threshold(imgshow, imgshow, thresh, 255, CV_THRESH_BINARY);
-			double sf = 640. / MAX(imgshow.rows, imgshow.cols);
-			resize(imgshow, imgshow, Size(), sf, sf); //调整图像大小640 x 640
-
-			// imshow("imgshow", imgshow);
-		}
-	}
-
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
 	bitwise_xor(img3, img4, img4);
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
 
-#if 1
 	int x,y;
 	int width = img1.cols;
 	int height = img1.rows;
@@ -182,7 +135,6 @@ void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_im
 			dst.at<float>(y,x) = phase_series.at<uchar>(y,x)*2*CV_PI + src.at<float>(y,x);
 		}
 	}
-#endif
 
 	if(phase_series_txt)
 	{
