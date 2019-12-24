@@ -6,11 +6,11 @@
 
 using namespace std;
 
-const string storintrinsicsyml  = "../mydata/output/intrinsics.yml";
-const string storextrinsicsyml  = "../mydata/output/extrinsics.yml";
+const string storintrinsicsyml  = "./source_data/output/intrinsics.yml";
+const string storextrinsicsyml  = "./source_data/output/extrinsics.yml";
 
-const string unwrapped_phase_image_left = "../mydata/output/unwrapped_phase_left.bmp";
-const string unwrapped_phase_image_right = "../mydata/output/unwrapped_phase_right.bmp";
+const string unwrapped_phase_image_left = "./source_data/output/unwrapped_phase_left.bmp";
+const string unwrapped_phase_image_right = "./source_data/output/unwrapped_phase_right.bmp";
 
 
 void savepnts3D(const char *filename, cv::Mat& mat);

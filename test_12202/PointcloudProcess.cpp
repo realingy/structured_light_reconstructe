@@ -1,7 +1,7 @@
 #include "PointcloudProcess.h"
 
-const char* pnts3D_pcdfilename = "../mydata/output/pnts3D_pcd.pcd";
-const char* pnts3D_filtered_pcdfilename = "../mydata/output/pnts3D_pcd_filtered.pcd";
+const char* pnts3D_pcdfilename = "./source_data/output/pnts3D_pcd.pcd";
+const char* pnts3D_filtered_pcdfilename = "./source_data/output/pnts3D_pcd_filtered.pcd";
  
 void savepntsPCD(cv::Mat& pnts)
 {
@@ -53,7 +53,6 @@ void savepntsPCD(cv::Mat& pnts)
 //   while(!viewer.wasStopped());
 }
  
-
 void filterpointcloud(void)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -64,6 +63,7 @@ void filterpointcloud(void)
 	reader.read(pnts3D_pcdfilename, *cloud);
   
 	std::cout << "Pointcloud before filtering: " << cloud->width*cloud->height << "data points" <<endl;
+
 #if 0
 	/**********************VoxelGrid************************************/
 	pcl::VoxelGrid< pcl::PointXYZ > sor;
@@ -109,9 +109,9 @@ void filterpointcloud(void)
 	mls.setSearchRadius(0.003);
 	mls.process(mls_points);
   
-	pcl::io::savePCDFileASCII("../mydata/output/mls_points.pcd", mls_points);
+	pcl::io::savePCDFileASCII("./source_data/output/mls_points.pcd", mls_points);
 
-	reader.read("../mydata/output/mls_points.pcd", *cloud_res);
+	reader.read("./source_data/output/mls_points.pcd", *cloud_res);
 	/***********************Surface Reconstruction****************************************/
  
 	pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> n;
@@ -146,6 +146,7 @@ void filterpointcloud(void)
 	gp3.setSearchMethod(tree2);
 	gp3.reconstruct(triangles);
   
+	/*
 	std::vector<int> parts = gp3.getPartIDs();
 	std::vector<int> states = gp3.getPointStates();
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("3D viewer"));
@@ -158,6 +159,8 @@ void filterpointcloud(void)
 	{
 		viewer->spinOnce(100);
 	}
+	*/
+
 }
 
 
@@ -183,8 +186,8 @@ void poissonreconstruction(void)
   
 	mls.process(mls_points);
   
-	pcl::io::savePCDFileASCII("../mydata/output/mls_points.pcd", mls_points);  
-	reader.read("../mydata/output/mls_points.pcd", *mls_cloud);
+	pcl::io::savePCDFileASCII("./source_data/output/mls_points.pcd", mls_points);  
+	reader.read("./source_data/output/mls_points.pcd", *mls_cloud);
 
 	cout << "===> " << mls_cloud->points.size() << endl;
   

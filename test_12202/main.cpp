@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	/*******************************Stereo calibration*****************************************/
 #if 0
 	cout << "\n======================================================" << endl;
-	const string Calibimagelistfn = "../mydata/input/stereo_calib_images.xml";
+	const string Calibimagelistfn = "./source_data/input/stereo_calib_images.xml";
 
 	cout << ">>>1 Stereo Calibration" << endl;
 
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 	cout << "\n======================================================" << endl;
 	// images Rectified
 	cout << ">>>2 Image Rectify" << endl;
-	const string Phaseimageslistfn = "../mydata/input/phase_images.xml";
-	const string Rectifiedimageslistfn = "../mydata/input/Rect_images.xml";
+	const string Phaseimageslistfn = "./source_data/input/phase_images.xml";
+	const string Rectifiedimageslistfn = "./source_data/input/Rect_images.xml";
 
 	ImgRectified(storintrinsicsyml, storextrinsicsyml, Phaseimageslistfn, Rectifiedimageslistfn);
 #endif
@@ -54,12 +54,12 @@ int main(int argc, char **argv)
 	cout << "\n======================================================" << endl;
 	cout << ">>>3 Calculate phase" << endl;
 
-	const char* wrapped_phaseleft_txt = "../mydata/output/wrapped_phase_left.txt";
-	const char* wrapped_phaseright_txt = "../mydata/output/wrapped_phase_right.txt";
-	const char* unwrapped_phaseleft_txt = "../mydata/output/unwrapped_phase_left.txt";
-	const char* unwrapped_phaseright_txt = "../mydata/output/unwrapped_phase_right.txt";
-	const char* Rect_images_left = "../mydata/input/Rect_images_left.xml";
-	const char* Rect_images_right = "../mydata/input/Rect_images_right.xml";
+	const char* wrapped_phaseleft_txt = "./source_data/output/wrapped_phase_left.txt";
+	const char* wrapped_phaseright_txt = "./source_data/output/wrapped_phase_right.txt";
+	const char* unwrapped_phaseleft_txt = "./source_data/output/unwrapped_phase_left.txt";
+	const char* unwrapped_phaseright_txt = "./source_data/output/unwrapped_phase_right.txt";
+	const char* Rect_images_left = "./source_data/input/Rect_images_left.xml";
+	const char* Rect_images_right = "./source_data/input/Rect_images_right.xml";
 
 	//Calculate left phase
 	cout << "\n[1] Calculate left phase" << endl;
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 	cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, pnts3D);
 
     cout << "\n[3] Save points3D" <<endl;
-	const char* pnts3D_filename = "../mydata/output/pnts3D.txt";
+	const char* pnts3D_filename = "./source_data/output/pnts3D.txt";
     savepnts3D( pnts3D_filename, pnts3D);
     savepntsPCD(pnts3D);
 

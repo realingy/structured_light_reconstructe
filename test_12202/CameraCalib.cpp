@@ -137,7 +137,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     Mat cameraMatrix[2], distCoeffs[2];
 //*************************************************//
 //     FileStorage  fs1;
-//     fs1.open("../mydata/intrinsics_Left.xml", FileStorage::READ);
+//     fs1.open("./source_data/intrinsics_Left.xml", FileStorage::READ);
 //     
 //     Mat intrinsic_matrix_loaded, distortion_coeffs_loaded;
 //     fs1["camera_matrix"] >> intrinsic_matrix_loaded;
@@ -147,7 +147,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
 //     cameraMatrix[0] = intrinsic_matrix_loaded;
 //     distCoeffs[0] = distortion_coeffs_loaded;
 //    
-//     fs1.open("../mydata/intrinsics_Right.xml", FileStorage::READ);
+//     fs1.open("./source_data/intrinsics_Right.xml", FileStorage::READ);
 //     fs1["camera_matrix"] >> intrinsic_matrix_loaded;
 //     fs1["distortion_cofficients"] >> distortion_coeffs_loaded;
 //     fs1.release(); 
@@ -343,7 +343,7 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
             for( j = 0; j < canvas.cols; j += 16 )
                 line(canvas, Point(j, 0), Point(j, canvas.rows), Scalar(0, 255, 0), 1, 8);
         imshow("rectified", canvas);
-		// imwrite("../mydata/rectified.jpg", canvas);
+		// imwrite("./source_data/rectified.jpg", canvas);
         char c = (char)waitKey();
         if( c == 27 || c == 'q' || c == 'Q' )
             break;
@@ -596,7 +596,7 @@ void StereoCalibration2(const std::string &storintrinsicsyml, const std::string 
 			for (j = 0; j < canvas.cols; j += 16)
 				line(canvas, Point(j, 0), Point(j, canvas.rows), Scalar(0, 255, 0), 1, 8);
 		imshow("rectified", canvas);
-		// imwrite("../mydata/rectified.jpg", canvas);
+		// imwrite("./source_data/rectified.jpg", canvas);
 		char c = (char)waitKey();
 		if (c == 27 || c == 'q' || c == 'Q')
 			break;

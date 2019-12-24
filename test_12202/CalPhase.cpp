@@ -106,7 +106,7 @@ void UnwrappedPhaseClassicMethod(Mat& src, Mat& dst)
 
 void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
+	const char * series_phase_txt = "./source_data/output/series_phase_model1.txt";
 
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);
@@ -128,7 +128,7 @@ void UnwrappedPhaseMFPSMethod(Mat& src, Mat& dst, const std::string &Rect_images
 
 void UnwrappedPhaseGraycodeMethod(Mat& src, Mat& dst, const std::string &Rect_images)
 {
-	const char * series_phase_txt = "../mydata/output/series_phase_model1.txt";
+	const char * series_phase_txt = "./source_data/output/series_phase_model1.txt";
   
 	vector<string> imagelist;
 	bool ok = readString(Rect_images, imagelist);

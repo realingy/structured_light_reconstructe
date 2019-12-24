@@ -152,7 +152,6 @@ void find_featureBlock(Mat& leftphase, Mat& rightphase,
 	}
 }
 
-//计算视差
 void find_featureSAD(Mat& leftphase, Mat& rightphase)
 {
 	Mat leftimg8(Size(leftphase.cols, leftphase.rows), CV_8UC1, Scalar(0.0));
