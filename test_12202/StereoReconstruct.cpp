@@ -4,21 +4,6 @@
 
 #define PHASE_THRESHOLD  0.01
 
-typedef pair<Point2i, float> PAIR;
-
-/*
-bool cmp_by_value(const PAIR& lhs, const PAIR& rhs) {
-	return lhs.second < rhs.second;
-}
-
-struct CmpByValue {
-	bool operator()(const PAIR& pair1, const PAIR& pair2) {
-		return pair1.second < pair2.second;
-	}
-};
-*/
-
-
 // 基于极线矫正后行对齐的图像
 
 // 寻找匹配点的思路：在同一行中，先在右图中寻找和左图中的点P1相位绝对差小于阈值的匹配点P2，再在左图中寻找P2的相位绝对差小于阈值的匹配点P3，
@@ -141,7 +126,7 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 	int k;
 	float left;
 	Point2f point_left, point_right;
-	int area = 20; //在边长40的区域中寻找匹配点
+	int area = 10; //在边长40的区域中寻找匹配点
 
 	for (int i = 0; i < row; i++)
 	{
@@ -156,38 +141,74 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 				while ((abs(left - rightphase.at<float>(i, k)) > PHASE_THRESHOLD) && (k < col)) k++;
 
 				//在以(i,k)为中心的区域内寻找相位最近的4个点
+				std::map<float, Point2i> map_points;
+				bool area_process = false;
 				if (i > area && i<row - area && k>area && k < col - area)
 				{
-					/*
-					map<Point2i, float> map_points;
-					map_points.insert(std::pair<Point2i, float>( Point2i(i-area, k-area), abs(left - rightphase.at<float>(i - area, k - area)) ) );
-					map_points.insert(std::pair<Point2i, float>( Point2i(i-area, k-area+1), abs(left - rightphase.at<float>(i - area, k - area+1)) ) );
-					map_points.insert(std::pair<Point2i, float>( Point2i(i-area, k-area+2), abs(left - rightphase.at<float>(i - area, k - area+2)) ) );
-					map_points.insert(std::pair<Point2i, float>( Point2i(i-area, k-area+3), abs(left - rightphase.at<float>(i - area, k - area+3)) ) );
-					*/
-
-					//vector<PAIR> vec_points(map_points.begin(), map_points.end());
-					//std::sort(vec_points.begin(), vec_points.end(), CmpByValue());  //排序
+					area_process = true;
+					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area)), Point2i(i-area, k-area) ) );
+					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+1)), Point2i(i-area, k-area+1) ) );
+					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+2)), Point2i(i-area, k-area+2) ) );
+					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+3)), Point2i(i-area, k-area+3) ) );
+					//map_points.insert(make_pair( abs(left-rightphase.at<float>(i-area, k-area)), Point2i(i-area, k-area) ) );
+					//map_points[1.2] = Point2i(10, 10);
 
 					for (int m = i - area; m < i + area; m++)
 					{
 						for (int n = k - area; n < k + area; n++)
 						{
-							if (abs(left - rightphase.at<float>(i - area, k - area)))
+							std::map<float, Point2i>::reverse_iterator rit = map_points.rbegin();
+							if ( abs(left - rightphase.at<float>(m, n)) < rit->first)
 							{
-
+								map_points.erase(rit->first);
+								map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(m, n)), Point2i(m, n) ) );
 							}
 						}
 					}
-
 				}
+
+				/*
+				if (true == area_process)
+				{
+					cout << "==========================\n";
+					cout << "value at kkkkkkkkkkkk====> " << abs(left - rightphase.at<float>(i, k)) << "\t[" << i << "," << k  << "]" << endl;
+					for (auto& x: map_points) {
+						std::cout << x.first << ":\t" << x.second << '\n';
+					}
+					cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$\n";
+				}
+				*/
+
+				vector<Point2i> vec_points;
+				vec_points.push_back(Point2i(i,k));
+				if (true == area_process)
+				{
+					std::map<float, Point2i>::iterator it = map_points.begin();
+					for (auto & x: map_points) {
+						if (x.first <= abs(left - rightphase.at<float>(i, k)))
+							vec_points.push_back(x.second);
+					}
+				}
+
+				int coor_x_sum = 0;
+				int coor_y_sum = 0;
+				for (auto point : vec_points)
+				{
+					coor_x_sum += point.y;
+					coor_y_sum += point.x;
+				}
+
+				float coor_x = (float)coor_x_sum / vec_points.size();
+				float coor_y = (float)coor_y_sum / vec_points.size();
 
 				if (k < col)
 				{
 					point_left.x = j;
 					point_left.y = i;
-					point_right.x = k;
-					point_right.y = i;
+					//point_right.x = k;
+					//point_right.y = i;
+					point_right.x = coor_x;
+					point_right.y = coor_y;
 					leftkeypoint.push_back(point_left);
 					rightkeypoint.push_back(point_right);
 				}
