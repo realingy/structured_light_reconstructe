@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<imagelist>
+"../input/pattern/Pattern_R/Graycoderight01.bmp"
+"../input/pattern/Pattern_R/Graycoderight02.bmp"
+"../input/pattern/Pattern_R/Graycoderight03.bmp"
+"../input/pattern/Pattern_R/Graycoderight04.bmp"
+"../input/pattern/Pattern_R/Graycoderight05.bmp"
+"../input/pattern/Pattern_R/Graycoderight06.bmp"
+"../input/pattern/Pattern_R/PhaseShiftright01.bmp"
+"../input/pattern/Pattern_R/PhaseShiftright02.bmp"
+"../input/pattern/Pattern_R/PhaseShiftright03.bmp"
+"../input/pattern/Pattern_R/PhaseShiftright04.bmp"
+</imagelist>
+</opencv_storage>

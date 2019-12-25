@@ -12,6 +12,8 @@
 using namespace cv;
 using namespace std;
 
+//#define PATTERN_TEST
+
 #if 1
 int main(int argc, char **argv)
 {
@@ -59,13 +61,19 @@ int main(int argc, char **argv)
 	const char* wrapped_phaseright_txt = "../result/wrapped_phase_right.txt";
 	const char* unwrapped_phaseleft_txt = "../result/unwrapped_phase_left.txt";
 	const char* unwrapped_phaseright_txt = "../result/unwrapped_phase_right.txt";
-	const char* Rect_images_left = "../input/Rect_images_left.xml";
-	const char* Rect_images_right = "../input/Rect_images_right.xml";
+
+#ifndef PATTERN_TEST
+	const char* input_images_left = "../input/Rect_images_left.xml";
+	const char* input_images_right = "../input/Rect_images_right.xml";
+#else
+	const char* input_images_left = "../input/Pattern_images_left.xml";
+	const char* input_images_right = "../input/Pattern_images_right.xml";
+#endif
 
 	//Calculate left phase
 	cout << "\n[1] Calculate left phase" << endl;
 
-	Mat wrapped_phase_left = CalWrappedPhase(Rect_images_left).clone();
+	Mat wrapped_phase_left = CalWrappedPhase(input_images_left).clone();
 
 	if (wrapped_phaseleft_txt)
 	{
@@ -76,7 +84,7 @@ int main(int argc, char **argv)
 	Mat unwrapped_phase_left(Size(wrapped_phase_left.cols, wrapped_phase_left.rows), CV_32FC1, Scalar(0.0));
 	cout << "Phase unwrapping..." << endl;
 
-	UnwrappedPhaseGraycode(wrapped_phase_left, unwrapped_phase_left, Rect_images_left);
+	UnwrappedPhaseGraycode(wrapped_phase_left, unwrapped_phase_left, input_images_left);
 
 	if (unwrapped_phaseleft_txt)
 	{
@@ -89,7 +97,7 @@ int main(int argc, char **argv)
 
 	/*************************Calculate right phase***********************************/
 	cout << "\n[2] Calculate right phase" << endl;
-	Mat wrapped_phase_right = CalWrappedPhase(Rect_images_right).clone();
+	Mat wrapped_phase_right = CalWrappedPhase(input_images_right).clone();
 	Mat unwrapped_phase_right(Size(wrapped_phase_right.cols, wrapped_phase_right.rows), CV_32FC1, Scalar(0.0));  // warning SIZE(cols,rows)!!!
 
 	if (wrapped_phaseright_txt)
@@ -100,7 +108,7 @@ int main(int argc, char **argv)
 
 	cout << "Phase unwrapping..." << endl;
 
-	UnwrappedPhaseGraycode(wrapped_phase_right, unwrapped_phase_right, Rect_images_right);
+	UnwrappedPhaseGraycode(wrapped_phase_right, unwrapped_phase_right, input_images_right);
 
 	if (unwrapped_phaseright_txt)
 	{
@@ -146,9 +154,9 @@ int main(int argc, char **argv)
 	cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, points);
 
     cout << "\n[3] Save points3D" <<endl;
-	// const char* pnts3d_txt = "../result/points.txt";
-    // savepnts3D( pnts3d_txt, points);
-    savepointcloud(points);
+	const char* pnts3d_txt = "../result/points.txt";
+    savepnts3D( pnts3d_txt, points);
+    // savepointcloud(points);
 
 	cout << "Stereo match and 3D reconstruct successful!\n";
 #endif    
@@ -156,7 +164,7 @@ int main(int argc, char **argv)
 	/*****************************Surface reconstruction************************************/
 	cout << "\n======================================================" << endl;
 	cout << ">>>5 Point cloud filte and Surface reconstruction" <<endl;
-	filterpointcloud();
+	//filterpointcloud();
 	//poissonreconstruction(); // 泊松曲面重建
     
 	cout << "\n======================================================" << endl;
@@ -221,6 +229,5 @@ int main() {
 	return 0;
 }
 */
-
 
 
