@@ -85,6 +85,8 @@ void filterpointcloud(void)
 	outrem.filter(*cloud_filtered);
   
 	std::cout << "Pointcloud after filtering: " << cloud_filtered->width*cloud_filtered->height << "data points" <<endl;
+
+	pcl::io::savePCDFileASCII("../result/points3d_res.pcd", *cloud_filtered);  
 }
 
 // 泊松重建
@@ -110,6 +112,7 @@ void poissonreconstruction(void)
 	mls.process(mls_points);
   
 	pcl::io::savePCDFileASCII("../result/points3d_res.pcd", mls_points);  
+
 	reader.read("../result/points3d_res.pcd", *mls_cloud);
 
 	cout << "===> " << mls_cloud->points.size() << endl;
