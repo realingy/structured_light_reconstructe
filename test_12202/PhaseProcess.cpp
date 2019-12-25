@@ -43,6 +43,7 @@ Mat CalWrappedPhase(const std::string &Rect_images)
     int width = img1.cols;   //列数
     Mat wrapped_phase(Size(width, height), CV_32FC1, Scalar(0.0));
     
+	/*
 	for(int i=0; i < height; i++)
     {
 		uchar *img1_data = img1.ptr<uchar>(i);
@@ -55,6 +56,47 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 		{
 			*wrapped_phase_data++ = atan2(((float)(*img4_data++) - (float)(*img2_data++)),
 											((float)(*img1_data++) - (float)(*img3_data++)));
+		}
+	}
+	*/
+
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			float I1 = (float)img2.at<uchar>(i, j);
+			float I2 = (float)img3.at<uchar>(i, j);
+			float I3 = (float)img4.at<uchar>(i, j);
+			float I4 = (float)img1.at<uchar>(i, j);
+
+			if (I4 == I2 && I1 > I3)
+			{
+				wrapped_phase.at<float>(i, j) = 0;
+			}
+			else if (I4 == I2 && I1 < I3)
+			{
+				wrapped_phase.at<float>(i, j) = CV_PI;
+			}
+			else if (I4 > I2&& I1 == I3)
+			{
+				wrapped_phase.at<float>(i, j) = CV_PI / 2;
+			}
+			else if (I4 < I2 && I1 == I3)
+			{
+				wrapped_phase.at<float>(i, j) = 3 * CV_PI / 2;
+			}
+			else if (I1 < I3) //第二、三象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + CV_PI;
+			}
+			else if (I1 > I3&& I4 > I2) //第一象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3));
+			}
+			else if (I1 > I3&& I4 < I2) //第四象限
+			{
+				wrapped_phase.at<float>(i, j) = atan((I4 - I2) / (I1 - I3)) + 2 * CV_PI;
+			}
 		}
 	}
     

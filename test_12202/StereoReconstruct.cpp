@@ -190,16 +190,16 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 					}
 				}
 
-				int coor_x_sum = 0;
-				int coor_y_sum = 0;
+				int cor_x_sum = 0;
+				int cor_y_sum = 0;
 				for (auto point : vec_points)
 				{
-					coor_x_sum += point.y;
-					coor_y_sum += point.x;
+					cor_x_sum += point.y;
+					cor_y_sum += point.x;
 				}
 
-				float coor_x = (float)coor_x_sum / vec_points.size();
-				float coor_y = (float)coor_y_sum / vec_points.size();
+				float cor_x = (float)cor_x_sum / vec_points.size();
+				float cor_y = (float)cor_y_sum / vec_points.size();
 
 				if (k < col)
 				{
@@ -207,8 +207,8 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 					point_left.y = i;
 					//point_right.x = k;
 					//point_right.y = i;
-					point_right.x = coor_x;
-					point_right.y = coor_y;
+					point_right.x = cor_x;
+					point_right.y = cor_y;
 					leftkeypoint.push_back(point_left);
 					rightkeypoint.push_back(point_right);
 				}
