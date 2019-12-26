@@ -12,7 +12,7 @@
 using namespace cv;
 using namespace std;
 
-//#define PATTERN_TEST
+// #define PATTERN_TEST
 
 #if 1
 int main(int argc, char **argv)
@@ -92,8 +92,25 @@ int main(int argc, char **argv)
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
 	}
 
+	const char * test_txt = "../result/test.txt";
+
+	FILE* fp = fopen(test_txt, "wt");
+
+	float *pixel_phase_data = unwrapped_phase_left.ptr<float>(569);
+
+	for (int x = 0; x < unwrapped_phase_left.cols; x++)
+	{
+		float point = *pixel_phase_data++;
+		fprintf(fp, "%f,", point);
+	}
+	fprintf(fp, "\n");
+
+	while (1) {}
+
 	cout << "storing the unwrapped_phase_image_left" << endl;
-	imwrite(unwrapped_phase_image_left, unwrapped_phase_left);
+	Mat tmp_left = unwrapped_phase_left.clone();
+	cv::normalize(unwrapped_phase_left, tmp_left, 0, 255, NORM_MINMAX);
+	imwrite(unwrapped_phase_image_left, tmp_left);
 
 	/*************************Calculate right phase***********************************/
 	cout << "\n[2] Calculate right phase" << endl;
@@ -117,7 +134,9 @@ int main(int argc, char **argv)
 	}
 
 	cout << "storing the unwrapped_phase_image_right" << endl;
-	imwrite(unwrapped_phase_image_right, unwrapped_phase_right);
+	Mat tmp_right;
+	cv::normalize(unwrapped_phase_right, tmp_right, 0, 255, NORM_MINMAX);
+	imwrite(unwrapped_phase_image_right, tmp_right);
 
 	cout << endl << "Calculate phase successful!" << endl;
 #endif
@@ -156,7 +175,7 @@ int main(int argc, char **argv)
     cout << "\n[3] Save points3D" <<endl;
 	const char* pnts3d_txt = "../result/points.txt";
     savepnts3D( pnts3d_txt, points);
-    // savepointcloud(points);
+    savepointcloud(points);
 
 	cout << "Stereo match and 3D reconstruct successful!\n";
 #endif    
@@ -164,7 +183,7 @@ int main(int argc, char **argv)
 	/*****************************Surface reconstruction************************************/
 	cout << "\n======================================================" << endl;
 	cout << ">>>5 Point cloud filte and Surface reconstruction" <<endl;
-	//filterpointcloud();
+	filterpointcloud();
 	//poissonreconstruction(); // 泊松曲面重建
     
 	cout << "\n======================================================" << endl;

@@ -99,7 +99,7 @@ Mat CalWrappedPhase(const std::string &Rect_images)
 			}
 		}
 	}
-    
+
 	return wrapped_phase;
 }
 
@@ -128,16 +128,14 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 	Mat img5 = imread(imagelist[4], CV_LOAD_IMAGE_GRAYSCALE);
 	Mat img6 = imread(imagelist[5], CV_LOAD_IMAGE_GRAYSCALE);
   
-	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
-  
-	uchar thresh = 130;
+	uchar thresh = 80;
 
-	threshold(img1, img1, thresh, 255, CV_THRESH_BINARY);
-	threshold(img2, img2, thresh, 255, CV_THRESH_BINARY);
-	threshold(img3, img3, thresh, 255, CV_THRESH_BINARY);
-	threshold(img4, img4, thresh, 255, CV_THRESH_BINARY);
-	threshold(img5, img5, thresh, 255, CV_THRESH_BINARY);
-	threshold(img6, img6, thresh, 255, CV_THRESH_BINARY);
+	threshold(img1, img1, thresh, 1, CV_THRESH_BINARY);
+	threshold(img2, img2, thresh, 1, CV_THRESH_BINARY);
+	threshold(img3, img3, thresh, 1, CV_THRESH_BINARY);
+	threshold(img4, img4, thresh, 1, CV_THRESH_BINARY);
+	threshold(img5, img5, thresh, 1, CV_THRESH_BINARY);
+	threshold(img6, img6, thresh, 1, CV_THRESH_BINARY);
 
 	bitwise_xor(img1, img2, img2);
 	bitwise_xor(img2, img3, img3);
@@ -145,11 +143,22 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 	bitwise_xor(img4, img5, img5);
 	bitwise_xor(img5, img6, img6);
 
+	/*
+	imwrite("img1.bmp", img1);
+	imwrite("img2.bmp", img2);
+	imwrite("img3.bmp", img3);
+	imwrite("img4.bmp", img4);
+	imwrite("img5.bmp", img5);
+	imwrite("img6.bmp", img6);
+	*/
+
+	Mat phase_series(Size(img1.cols, img1.rows), CV_8UC1, Scalar(0.0)); 
+
 	int x,y;
 	int width = img1.cols;
 	int height = img1.rows;
-	uchar pre_series,cur_series;
-	float pre_unphase, cur_unphase;
+	// uchar pre_series,cur_series;
+	// float pre_unphase, cur_unphase;
 	for(y=0; y < height; y++)
 	{
 		uchar *img1_ptr = img1.ptr<uchar>(y);
@@ -161,22 +170,72 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
     
 		for (x = 0; x < width; x++)
 		{
+			phase_series.at<uchar>(y, x) = img1.at<uchar>(y, x) * 32
+											+ img2.at<uchar>(y, x) * 16
+											+ img3.at<uchar>(y, x) * 8
+											+ img4.at<uchar>(y, x) * 4
+											+ img5.at<uchar>(y, x) * 2
+											+ img6.at<uchar>(y, x) * 1;
+			/*
 			phase_series.at<uchar>(y,x) = ((int)(*img1_ptr++))*32 + ((int)(*img2_ptr++))*16
-												+ ((int)(*img3_ptr++))*8 + ((int)(*img4_ptr++))*4 
+												+ ((int)(*img3_ptr++))*8 + ((int)(*img4_ptr++))*4
 												+ ((int)(*img5_ptr++))*2 + ((int)(*img6_ptr++))*1; 
+			*/
 		}
 	}
   
-	medianBlur(phase_series, phase_series, 9); //中值滤波
+	// medianBlur(phase_series, phase_series, 9); //中值滤波
 
-	for(y=0; y < height; y++)
+#if 0
+	int c1 = 0;
+	int c2 = 0;
+	int c3 = 0;
+	// 通过调整相位级次进行周期错位调整 
+	for (int i = 0; i < height; i++)
 	{
-		for(x=0; x < width; x++)
+		for (int j = 2; j < width; j++)
 		{
-			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
-			dst.at<float>(y,x) = phase_series.at<uchar>(y,x)*2*CV_PI + src.at<float>(y,x);
+			/*
+			if ( (src.at<float>(i, j) - src.at<float>(i, j - 1) < 0) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1) )
+			{
+				// phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1);
+				c1++;
+				src.at<float>(i, j - 1) = src.at<float>(i, j - 2);
+				src.at<float>(i, j) = src.at<float>(i, j + 1);
+			}
+			else if ((src.at<float>(i, j-1) < 0) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1))
+			{
+				c2++;
+				src.at<float>(i, j - 1) = src.at<float>(i, j - 2);
+				src.at<float>(i, j) = src.at<float>(i, j + 1);
+			}
+			else if ((src.at<float>(i, j) > 0) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1))
+			{
+				c3++;
+				src.at<float>(i, j - 1) = src.at<float>(i, j - 2);
+				src.at<float>(i, j) = src.at<float>(i, j + 1);
+			}
+			*/
+
+			if ( src.at<float>(i,j) > CV_PI && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) >= CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1)) )
+			{
+				//相位突变但是级次不变
+				c1++;
+				//phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1) + 1;
+			}
+			else if ( src.at<float>(i, j) > CV_PI && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) < CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1 ) )
+			{
+				//相位不突变但是级次有变化
+				c2++;
+				//phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1);
+			}
+
 		}
 	}
+	
+	//cout << "c1=======> " << c1 << ", c2=======> " << c2 << endl;
+	cout << "c1=======> " << c1 << ", c2=======> " << c2 << ", c3=======>" << c3 << endl;
+#endif
 
 	if(phase_series_txt)
 	{
@@ -195,6 +254,41 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 		}
 		fclose(fp);
 	}
+
+	// 保存解包裹相位（绝对相位）
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
+			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + src.at<float>(y, x);
+		}
+	}
+
+	int count = 0;
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 1; j < width-1; j++)
+		{
+			float dist = dst.at<float>(i, j) - dst.at<float>(i, j - 1);
+			if (dist < 0)
+			{
+				// dst.at<float>(i, j) = (dst.at<float>(i, j - 1) + dst.at<float>(i, j + 1)) / 2;
+			}
+
+			if ( dst.at<float>(i, j) > 2*CV_PI && dst.at<float>(i, j) < dst.at<float>(i, j - 1) && dst.at<float>(i, j - 1) < dst.at<float>(i, j + 1) )
+			{
+				dst.at<float>(i, j) = (dst.at<float>(i, j - 1) + dst.at<float>(i, j + 1)) / 2;
+				count++;
+			}
+		}
+	}
+
+	medianBlur(dst, dst, 5); //中值滤波
+		
+	// 周期错位像素数
+	cout << "period dislocation pixels count: " << count << endl;
+
 }
 
 
