@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
 	/*******************************Stereo calibration*****************************************/
-#if 0
+#if 1
 	cout << "\n======================================================" << endl;
 	const string Calibimagelistfn = "../input/stereo_calib_images.xml";
 
@@ -31,7 +31,10 @@ int main(int argc, char **argv)
 	//StereoCalibration(Calibimagelistfn, storintrinsicsyml, storextrinsicsyml);
 
 	//根据Matlab标定得到的内参数据填充内参文件，进行外参的计算（相机位置校正）
-	StereoCalibration2(storintrinsicsyml, storextrinsicsyml);
+	//StereoCalibrationByParams(storintrinsicsyml, storextrinsicsyml);
+
+	//根据标定角点数据进行相机标定
+	StereoCalibrationByCorner( storintrinsicsyml, storextrinsicsyml );
 
 	//end = clock(); //计时结束
 
@@ -92,24 +95,27 @@ int main(int argc, char **argv)
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
 	}
 
+#if 1
 	const char * test_txt = "../result/test.txt";
-
 	FILE* fp = fopen(test_txt, "wt");
-
-	float *pixel_phase_data = unwrapped_phase_left.ptr<float>(569);
-
-	for (int x = 0; x < unwrapped_phase_left.cols; x++)
+	int rs[] = { 30, 130, 230, 330, 430, 530, 630, 730 };
+	for (size_t i = 0; i < 8; i++)
 	{
-		float point = *pixel_phase_data++;
-		fprintf(fp, "%f,", point);
+		float *pixel_phase_data = unwrapped_phase_left.ptr<float>(rs[i]);
+		for (int x = 0; x < unwrapped_phase_left.cols; x++)
+		{
+			float point = *pixel_phase_data++;
+			fprintf(fp, "%f,", point);
+		}
+		fprintf(fp, "\n");
 	}
-	fprintf(fp, "\n");
-
-	while (1) {}
+#endif
 
 	cout << "storing the unwrapped_phase_image_left" << endl;
 	Mat tmp_left = unwrapped_phase_left.clone();
 	cv::normalize(unwrapped_phase_left, tmp_left, 0, 255, NORM_MINMAX);
+	//cv::medianBlur(tmp_left, tmp_left, 5); //中值滤波
+	//GaussianBlur(tmp_left, tmp_left, Size(11, 11), 0.1);
 	imwrite(unwrapped_phase_image_left, tmp_left);
 
 	/*************************Calculate right phase***********************************/
@@ -166,11 +172,36 @@ int main(int argc, char **argv)
 
 	//cout << "\n==> P1:\n" << P1 << endl;
 	//cout << "\n==> P2:\n" << P2 << endl;
+	////////////////////////////////////////////////////////////////////////////////////////
+	Mat R_T_1 = (Mat_<double>(3, 4) <<
+		-0.003449992052740, 0.908392369471684, 0.418104533149851, 3.688988301573581,
+		0.992268580264290, 0.054980888811595, -0.111266196509893, -4.927452164451585,
+		-0.124061122738460, 0.414488124016969, -0.901558890408035, 329.276493470459510);
+
+	Mat R_T_2 = (Mat_<double>(3, 4) <<
+		-0.005778730523496, 0.970132888506089, 0.242505226567117, 3.780742082249347,
+		0.992520961272705, 0.035135856240512, -0.116908567010947, -4.998608845649666,
+		-0.121937474583672, 0.240015937481406, -0.963080267707255, 328.926407599367390);
+
+	Mat cameraMatrix_1 = (Mat_<double>(3, 3) <<
+							5004.084968538499200,   -0.000186077310987, 796.177176385571330,
+							 0,					  5004.288845428079200, 645.098858869668220,
+							 0,						 0,					  1);
+
+	Mat cameraMatrix_2 = (Mat_<double>(3, 3) <<
+							4991.369386877208900,    0.000227164222608, 786.153820356970750,
+							 0,					  4991.811878028854200, 648.483429215111640,
+							 0,						 0,					  1);
+
+	Mat PP1 = cameraMatrix_1 * R_T_1;
+	Mat PP2 = cameraMatrix_2 * R_T_2;
+	////////////////////////////////////////////////////////////////////////////////////////
 
 	Mat points(4, leftfeaturepoints.size(), CV_64F);
 
 	cout << "\n[2] Calculate points3D" << endl;
 	cv::triangulatePoints(P1, P2, leftfeaturepoints, rightfeaturepoints, points);
+	//cv::triangulatePoints(PP1, PP2, leftfeaturepoints, rightfeaturepoints, points);
 
     cout << "\n[3] Save points3D" <<endl;
 	const char* pnts3d_txt = "../result/points.txt";

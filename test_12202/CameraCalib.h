@@ -15,4 +15,7 @@ void ImgRectified(const std::string& intrinsic_filename, const std::string& extr
 
 // 立体标定加相机位置校正(基础Matlab的标定结果)
 void StereoCalibrationByParams(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml);
+	
+void StereoCalibrationByCorner(const std::string &storintrinsicsyml, const std::string &storextrinsicsyml);
+
 #endif

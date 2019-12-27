@@ -27,8 +27,8 @@ void savepnts3D(const char *filename, cv::Mat& mat)
 	float *pnts3D_row2 = mat.ptr<float>(1);
 	float *pnts3D_row3 = mat.ptr<float>(2);
 	float *pnts3D_row4 = mat.ptr<float>(3);
-	int pixelsvel;
 
+	//int pixelsvel;
 	for (int y = 0; y < mat.cols; y++)
 	{
 		float pnts3D_data4 = *(pnts3D_row4 + y);
@@ -39,7 +39,7 @@ void savepnts3D(const char *filename, cv::Mat& mat)
 
 		fprintf(fp, "%f   %f   %f \n", pnts3D_data1, pnts3D_data2, pnts3D_data3);
 
-		pixelsvel = (int)(225 * pnts3D_data3 / 1900.00);
+		//pixelsvel = (int)(225 * pnts3D_data3 / 1900.00);
 	}
 
 	fclose(fp);

@@ -29,6 +29,10 @@ void savepointcloud(cv::Mat& pnts)
     
 		if(i < cloud.points.size())
 		{
+			//cloud.points[i].x = pnts3D_data1/1000.0f;
+			//cloud.points[i].y = pnts3D_data2/1000.0f;
+			//cloud.points[i].z = pnts3D_data3/1000.0f;
+
 			cloud.points[i].x = pnts3D_data1/1000.0f;
 			cloud.points[i].y = pnts3D_data2/1000.0f;
 			cloud.points[i].z = pnts3D_data3/1000.0f;
