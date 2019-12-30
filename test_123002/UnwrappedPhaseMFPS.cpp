@@ -49,14 +49,14 @@ void PasheShiftPatternGenerator(bool vertical)
 			// 保存pattern图像
 			stringstream ss;
 			string filename;
-			ss << "pattern/vPhase_" << i << "_" << j << ".bmp";
+			ss << "../pattern/vPhase_" << i << "_" << j << ".bmp";
 			ss >> filename;
 			cout << "save pattern: " << filename << endl;
 			cv::imwrite(filename, pattern[i][j]);
 			ss.clear();
 
 			// 灰度归一化
-			cv::normalize(pattern[i][j], pattern[i][j]);
+			//cv::normalize(pattern[i][j], pattern[i][j]);
 		}
 	}
 }
@@ -92,7 +92,6 @@ void CalImageWrappedPhase()
 				float I3 = phase4.at<float>(i, j);
 				float I4 = phase1.at<float>(i, j);
 
-				//(I4-I2)/(I1-I3)
 				if (I4 == I2 && I1 > I3 ) // 四个特殊位置
 				{
 					imageWrappedPhase[n].at<float>(i,j) = 0;
@@ -140,7 +139,7 @@ void CalImageWrappedPhase()
 	*/
 
 	/*
-	ofstream file("output/wrapphase1.txt");
+	ofstream file("../output/wrapphase1.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -150,7 +149,7 @@ void CalImageWrappedPhase()
 		file << endl;
 	}
 
-	ofstream file2("output/wrapphase2.txt");
+	ofstream file2("../output/wrapphase2.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -160,7 +159,7 @@ void CalImageWrappedPhase()
 		file2 << endl;
 	}
 
-	ofstream file3("output/wrapphase3.txt");
+	ofstream file3("../output/wrapphase3.txt");
 	for (int i = 0; i < gHeight; i++)
 	{
 		for (int j = 0; j < gWidth; j++)
@@ -226,11 +225,11 @@ void CalPhaseDifference()
 	cv::normalize(PH123, PH123, 0, 255, NORM_MINMAX);
 
 	cout << "saving phase diff of phase 1 & phase 2\n";
-	cv::imwrite("output/PhaseDiff12.bmp", PH12);
+	cv::imwrite("../output/PhaseDiff12.bmp", PH12);
 	cout << "saving phase diff of phase 2 & phase 3\n";
-	cv::imwrite("output/PhaseDiff23.bmp", PH23);
+	cv::imwrite("../output/PhaseDiff23.bmp", PH23);
 	cout << "saving phase diff of phase 1 & phase 2 & phase 3\n";
-	cv::imwrite("output/PhaseDiff123.bmp", PH123);
+	cv::imwrite("../output/PhaseDiff123.bmp", PH123);
 
 	// 灰度归一化
 	for (size_t i = 0; i < 3; i++)
@@ -238,11 +237,11 @@ void CalPhaseDifference()
 		cv::normalize(imageWrappedPhase[i], imageWrappedPhase[i], 0, 255, NORM_MINMAX);
 	}
 	cout << "saving wrapped phase 1\n";
-	cv::imwrite("output/WrapPhase1.bmp", imageWrappedPhase[0]);
+	cv::imwrite("../output/WrapPhase1.bmp", imageWrappedPhase[0]);
 	cout << "saving wrapped phase 2\n";
-	cv::imwrite("output/WrapPhase2.bmp", imageWrappedPhase[1]);
+	cv::imwrite("../output/WrapPhase2.bmp", imageWrappedPhase[1]);
 	cout << "saving wrapped phase 3\n";
-	cv::imwrite("output/WrapPhase3.bmp", imageWrappedPhase[2]);
+	cv::imwrite("../output/WrapPhase3.bmp", imageWrappedPhase[2]);
 }
 
 
