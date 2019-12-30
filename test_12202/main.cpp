@@ -12,13 +12,13 @@
 using namespace cv;
 using namespace std;
 
-// #define PATTERN_TEST
+#define PATTERN_TEST
 
 #if 1
 int main(int argc, char **argv)
 {
 	/*******************************Stereo calibration*****************************************/
-#if 1
+#if 0
 	cout << "\n======================================================" << endl;
 	const string Calibimagelistfn = "../input/stereo_calib_images.xml";
 
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 		savePhase(unwrapped_phaseleft_txt, unwrapped_phase_left);
 	}
 
-#if 1
+#if 0
 	const char * test_txt = "../result/test.txt";
 	FILE* fp = fopen(test_txt, "wt");
 	int rs[] = { 30, 130, 230, 330, 430, 530, 630, 730 };
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
 	cout << "\n======================================================" << endl;
 	cout << ">>>5 Point cloud filte and Surface reconstruction" <<endl;
 	filterpointcloud();
-	//poissonreconstruction(); // 泊松曲面重建
+	//poissonreconstruction();
     
 	cout << "\n======================================================" << endl;
 	cout << endl << ">>>";

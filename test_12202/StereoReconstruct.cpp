@@ -140,16 +140,18 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 
 				while ((abs(left - rightphase.at<float>(i, k)) > PHASE_THRESHOLD) && (k < col)) k++;
 
+				///////////////////////////////////////////////////////////////////////////
+				//找右图上的相对匹配点
 				//在以(i,k)为中心的区域内寻找相位最近的4个点
-				std::map<float, Point2i> map_points;
+				std::map<float, Point2i> map_points_right;
 				bool area_process = false;
 				if (i > area && i<row - area && k>area && k < col - area)
 				{
 					area_process = true;
-					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area)), Point2i(i-area, k-area) ) );
-					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+1)), Point2i(i-area, k-area+1) ) );
-					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+2)), Point2i(i-area, k-area+2) ) );
-					map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+3)), Point2i(i-area, k-area+3) ) );
+					map_points_right.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area)), Point2i(i-area, k-area) ) );
+					map_points_right.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+1)), Point2i(i-area, k-area+1) ) );
+					map_points_right.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+2)), Point2i(i-area, k-area+2) ) );
+					map_points_right.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(i-area, k-area+3)), Point2i(i-area, k-area+3) ) );
 					//map_points.insert(make_pair( abs(left-rightphase.at<float>(i-area, k-area)), Point2i(i-area, k-area) ) );
 					//map_points[1.2] = Point2i(10, 10);
 
@@ -157,64 +159,123 @@ void find_featurepionts_single_match(Mat& leftphase, Mat& rightphase, vector<Poi
 					{
 						for (int n = k - area; n < k + area; n++)
 						{
-							std::map<float, Point2i>::reverse_iterator rit = map_points.rbegin();
+							std::map<float, Point2i>::reverse_iterator rit = map_points_right.rbegin();
 							if ( abs(left - rightphase.at<float>(m, n)) < rit->first)
 							{
-								map_points.erase(rit->first);
-								map_points.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(m, n)), Point2i(m, n) ) );
+								map_points_right.erase(rit->first);
+								map_points_right.insert(std::pair<float, Point2i>( abs(left - rightphase.at<float>(m, n)), Point2i(m, n) ) );
 							}
 						}
 					}
 				}
 
-				/*
+				vector<Point2i> vec_points_right;
+				vec_points_right.push_back(Point2i(i,k));
 				if (true == area_process)
 				{
-					cout << "==========================\n";
-					cout << "value at kkkkkkkkkkkk====> " << abs(left - rightphase.at<float>(i, k)) << "\t[" << i << "," << k  << "]" << endl;
-					for (auto& x: map_points) {
-						std::cout << x.first << ":\t" << x.second << '\n';
-					}
-					cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$\n";
-				}
-				*/
-
-				vector<Point2i> vec_points;
-				vec_points.push_back(Point2i(i,k));
-				if (true == area_process)
-				{
-					std::map<float, Point2i>::iterator it = map_points.begin();
-					for (auto & x: map_points) {
+					std::map<float, Point2i>::iterator it = map_points_right.begin();
+					for (auto & x: map_points_right) {
+						// 比(i, k)更合理的点添加到容器中
 						if (x.first <= abs(left - rightphase.at<float>(i, k)))
-							vec_points.push_back(x.second);
+							vec_points_right.push_back(x.second);
 					}
 				}
 
 				int cor_x_sum = 0;
 				int cor_y_sum = 0;
-				for (auto point : vec_points)
+				float phase_right_total = 0.0;
+				for (auto point : vec_points_right)
 				{
 					cor_x_sum += point.y;
 					cor_y_sum += point.x;
+					phase_right_total += rightphase.at<float>(point.x, point.y);
 				}
 
-				float cor_x = (float)cor_x_sum / vec_points.size();
-				float cor_y = (float)cor_y_sum / vec_points.size();
+				float cor_x_right = (float)cor_x_sum / vec_points_right.size();
+				float cor_y_right = (float)cor_y_sum / vec_points_right.size();
+				float cor_phase_right = (float)phase_right_total / vec_points_right.size();
+				// float cor_phase_right = rightphase.at<float>( (int)cor_x_right, (int)cor_y_right );
 
-				if (k < col)
+				// cout << "<=" << cor_phase_right << "=>" << endl;
+
+#if 1
+				///////////////////////////////////////////////////////////////////////////
+				//找左图上的相对匹配点
+				//在以(i,j)为中心的区域内寻找和(cor_x, cor_y)相位最近的4个点
+				std::map<float, Point2i> map_points_left;
+				area_process = false;
+				if ( i > area && i < row - area && j > area && j < col - area)
 				{
-					point_left.x = j;
-					point_left.y = i;
+					area_process = true;
+					map_points_left.insert(std::pair<float, Point2i>(abs(cor_phase_right - leftphase.at<float>(i - area, j - area)), Point2i(i - area, j - area)));
+					map_points_left.insert(std::pair<float, Point2i>(abs(cor_phase_right - leftphase.at<float>(i - area, j - area + 1)), Point2i(i - area, j - area + 1)));
+					map_points_left.insert(std::pair<float, Point2i>(abs(cor_phase_right - leftphase.at<float>(i - area, j - area + 2)), Point2i(i - area, j - area + 2)));
+					map_points_left.insert(std::pair<float, Point2i>(abs(cor_phase_right - leftphase.at<float>(i - area, j - area + 3)), Point2i(i - area, j - area + 3)));
+
+					for (int m = i - area; m < i + area; m++)
+					{
+						for (int n = j - area; n < j + area; n++)
+						{
+							std::map<float, Point2i>::reverse_iterator rit = map_points_left.rbegin();
+							if (abs(cor_phase_right - leftphase.at<float>(m, n)) < rit->first)
+							{
+								map_points_left.erase(rit->first);
+								map_points_left.insert(std::pair<float, Point2i>(abs(left - rightphase.at<float>(m, n)), Point2i(m, n)));
+							}
+						}
+					}
+				}
+
+				vector<Point2i> vec_points_left;
+				vec_points_left.push_back(Point2i(i, j));
+				if (true == area_process)
+				{
+					std::map<float, Point2i>::iterator it = map_points_left.begin();
+					for (auto & x : map_points_left) {
+						// 比(i, j)更合理的点添加到容器中
+						if (x.first <= abs(cor_phase_right - leftphase.at<float>(i, j)))
+							vec_points_left.push_back(x.second);
+					}
+				}
+
+				int cor_x_left_sum = 0;
+				int cor_y_left_sum = 0;
+				float phase_left_total = 0.0;
+				for (auto point : vec_points_left)
+				{
+					cor_x_left_sum += point.y;
+					cor_y_left_sum += point.x;
+					phase_left_total += leftphase.at<float>(point.x, point.y);
+				}
+
+				float cor_x_left = (float)cor_x_left_sum / vec_points_left.size();
+				float cor_y_left = (float)cor_y_left_sum / vec_points_left.size();
+				float cor_phase_left = (float)phase_left_total / vec_points_left.size();
+				// float cor_phase_left = (float)leftphase.at<float>( (int)cor_x_left, (int)cor_y_left);
+
+				///////////////////////////////////////////////////////////////////////////
+
+				// cout << abs(cor_phase_left - cor_phase_right) << "\t";
+#endif
+				//if (k < col)
+				if ( abs(cor_phase_left -  cor_phase_right ) < 0.001)
+				{
+					//point_left.x = j;
+					//point_left.y = i;
 					//point_right.x = k;
 					//point_right.y = i;
-					point_right.x = cor_x;
-					point_right.y = cor_y;
+					point_left.x = cor_x_left;
+					point_left.y = cor_y_left;
+					point_right.x = cor_x_right;
+					point_right.y = cor_y_right;
 					leftkeypoint.push_back(point_left);
 					rightkeypoint.push_back(point_right);
 				}
 			}
 		}
 	}
+
+	cout << "====> " << leftkeypoint.size() << endl;
 }
 
 

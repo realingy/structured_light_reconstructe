@@ -203,33 +203,30 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
   
 	//medianBlur(phase_series, phase_series, 9); //中值滤波
 
-#if 0
 	int c1 = 0;
 	int c2 = 0;
-	int c3 = 0;
 	// 通过调整相位级次进行周期错位调整 
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 2; j < width; j++)
 		{
-			if ( src.at<float>(i,j) > CV_PI && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) >= CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1)) )
+			if ( src.at<float>(i,j) > CV_PI * 0.3 && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) >= CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1)) )
+			//if ( (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) >= CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1)) )
 			{
 				//相位突变但是级次不变
 				c1++;
 				phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1) + 1;
 			}
-			else if ( src.at<float>(i, j) > CV_PI && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) < CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1 ) )
+			else if ( src.at<float>(i, j) > CV_PI * 0.3 && (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) < CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1 ) )
+			//else if ( (abs(src.at<float>(i, j) - src.at<float>(i, j - 1)) < CV_PI) && (phase_series.at<uchar>(i, j) == phase_series.at<uchar>(i, j - 1) + 1 ) )
 			{
 				//相位不突变但是级次有变化
 				c2++;
 				phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1);
 			}
-
 		}
 	}
-	//cout << "c1=======> " << c1 << ", c2=======> " << c2 << endl;
-	//cout << "c1=======> " << c1 << ", c2=======> " << c2 << ", c3=======>" << c3 << endl;
-#endif
+	cout << "c1=======> " << c1 << ", c2=======> " << c2 << endl;
 
 	if(phase_series_txt)
 	{
@@ -259,6 +256,7 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 		}
 	}
 
+#if 0
 	int c1 = 0;
 	int c2 = 0;
 	// 通过调整相位级次进行周期错位调整 
@@ -280,21 +278,10 @@ void UnwrappedPhaseGraycode(Mat& src, Mat& dst, const std::string &Rect_images)
 				c2++;
 				phase_series.at<uchar>(i, j) = phase_series.at<uchar>(i, j - 1);
 			}
-
 		}
 	}
 	cout << "c1=======> " << c1 << ", c2=======> " << c2 << endl;
-
-	// 重新计算绝对相位
-	// 保存解包裹相位（绝对相位）
-	for (y = 0; y < height; y++)
-	{
-		for (x = 0; x < width; x++)
-		{
-			//绝对相位 = 2*PI*k + θ(x,y)（相对相位/相位主体）
-			dst.at<float>(y, x) = phase_series.at<uchar>(y, x) * 2 * CV_PI + src.at<float>(y, x);
-		}
-	}
+#endif
 
 	int count = 0;
 	for (int i = 0; i < height; i++)
