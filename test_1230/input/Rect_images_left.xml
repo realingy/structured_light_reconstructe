@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<imagelist>
+"../input/images/Rectify_L/Graycodeleft01.bmp"
+"../input/images/Rectify_L/Graycodeleft02.bmp"
+"../input/images/Rectify_L/Graycodeleft03.bmp"
+"../input/images/Rectify_L/Graycodeleft04.bmp"
+"../input/images/Rectify_L/Graycodeleft05.bmp"
+"../input/images/Rectify_L/Graycodeleft06.bmp"
+"../input/images/Rectify_L/PhaseShiftleft01.bmp"
+"../input/images/Rectify_L/PhaseShiftleft02.bmp"
+"../input/images/Rectify_L/PhaseShiftleft03.bmp"
+"../input/images/Rectify_L/PhaseShiftleft04.bmp"
+</imagelist>
+</opencv_storage>
