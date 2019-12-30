@@ -235,6 +235,24 @@ void CalUnwrappedPhase()
 		}
 	}
 
+	int count = 0;
+	for (int i = 0; i < gHeight; i++)
+	{
+		for (int j = 1; j < gWidth - 1; j++)
+		{
+			float dist = dst.at<float>(i, j) - dst.at<float>(i, j - 1);
+			if (dist < 0)
+			{
+				// dst.at<float>(i, j) = (dst.at<float>(i, j - 1) + dst.at<float>(i, j + 1)) / 2;
+				count++;
+			}
+		}
+	}
+
+	// 周期错位像素数
+	cout << "period dislocation pixels count: " << count << endl;
+
+
 	cv::normalize(image_wrapped_phase, image_wrapped_phase, 0, 255, NORM_MINMAX);
 	cout << "saving wrapped phase \n";
 	cv::imwrite("data/WrapPhase.bmp", image_wrapped_phase);

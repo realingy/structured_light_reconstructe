@@ -148,6 +148,8 @@ static void StereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     cameraMatrix[0] = Mat::eye(3, 3, CV_64F);  
     cameraMatrix[1] = Mat::eye(3, 3, CV_64F);
 
+	cout << "size: " << imageSize << endl;
+
 	// R: 第一个相机和第二个相机位姿之间的旋转矩阵
 	// T: 第一个相机和第二个相机位姿之间的平移向量
 	// E：本征矩阵
