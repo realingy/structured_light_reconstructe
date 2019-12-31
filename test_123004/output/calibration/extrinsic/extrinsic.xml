@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<CameraRotationVectors type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    2.8274363621582231e-003 2.2718351061737244e-001
+    -5.2523650658773255e-003</data></CameraRotationVectors>
+<CameraTranslationVectors type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    -1.1596683812440935e+002 -6.2391613968438612e+001
+    4.4298955374980557e+002</data></CameraTranslationVectors>
+<ProjectorRotationVectors type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    2.7961326199816383e-003 -1.1938137255332259e-002
+    -7.9430446942439746e-003</data></ProjectorRotationVectors>
+<ProjectorTranslationVectors type_id="opencv-matrix">
+  <rows>3</rows>
+  <cols>1</cols>
+  <dt>d</dt>
+  <data>
+    -1.0541734903980777e+002 -6.1917135601219300e+001
+    3.8916031227171521e+002</data></ProjectorTranslationVectors>
+<CameraProjectorExtrinsicCalibrationFlag>1</CameraProjectorExtrinsicCalibrationFlag>
+</opencv_storage>
