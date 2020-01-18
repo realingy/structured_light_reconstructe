@@ -9,6 +9,17 @@ string projDirname = "../ProjectedImages/32-08"; // Directory containing the fre
 
 cv::Mat MicroPhaseShiftDecode(string dirname, string imPrefix, string imSuffix, int indexLength, vector<float> frequencyVec, cv::Size camDim, cv::Size projDim);
 
+/*
+int main()
+{
+	float x = fmod(12, 1.777777);
+	cout << "x: " << x << endl;
+
+	return 0;
+}
+*/
+
+#if 1
 int main()
 {
 	// load([projDirname, '\freqData.mat']);
@@ -136,14 +147,11 @@ cv::Mat MicroPhaseShiftDecode(string dirname, string imPrefix, string imSuffix, 
 % The function first performs a linear search on the projector column
 % indices.Then, it adds the sub-pixel component.
 */
-cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<float> frequencyVec, int numProjColumns, int nr, int nc)
+cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<double> frequencyVec, int numProjColumns, int nr, int nc)
 {
 	//x0 = [0 : numProjColumns - 1]; // Projector column indices
-	cv::Mat x0(1, numProjColumns, CV_8U); // Projector column indices
-	for (int i = 0; i < numProjColumns; i++)
-	{
-
-	}
+	//cv::Mat TestMat = repmat(x0, [size(CosSinMat, 1) 1]);
+	//cv::Mat TestMat = repmat(x0, [CosSinMat.rows 1]);
 
 	/*
 	% Computing the cos and sin values for each projector column.
@@ -152,17 +160,56 @@ cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<float> freq
 	% For the phases of the remaining frequencies, we have cos.
 	% These will be compared against the values in CosSinMat to find the closest match.
 	*/
-	cv::Mat TestMat = repmat(x0, [size(CosSinMat, 1) 1]);
-	//cv::Mat TestMat = repmat(x0, [CosSinMat.rows 1]);
+	cv::Mat TestMat = cv::Mat(CosSinMat.rows, numProjColumns, CV_64F);
+	for (size_t i = 0; i < TestMat.rows; i++)
+	{
+		double * data = TestMat.ptr<double>(i); //得到对i行的首地址
+		for (size_t j = 0; j < TestMat.cols; j++)
+		{
+			data[j] = (double)j; 
+		}
+	}
 
-	TestMat(1, :) = cos((mod(TestMat(1, :), frequencyVec(1)) / frequencyVec(1)) * 2 * pi); //cos of the phase for the first frequency
-	TestMat(2, :) = sin((mod(TestMat(2, :), frequencyVec(1)) / frequencyVec(1)) * 2 * pi); // sin of the phase for the first frequency
 
-	for i = 3:size(CosSinMat, 1)
-		TestMat(i, :) = cos((mod(TestMat(i, :), frequencyVec(i - 1)) / frequencyVec(i - 1)) * 2 * pi); // cos of the phases of the remaining frequency
+	//TestMat(1, :) = cos( (mod(TestMat(1, :), frequencyVec(1)) / frequencyVec(1)) * 2 * pi ); //cos of the phase for the first frequency
+	//TestMat(2, :) = sin( (mod(TestMat(2, :), frequencyVec(1)) / frequencyVec(1)) * 2 * pi ); //sin of the phase for the first frequency
+
+	//for i = 3:size(CosSinMat, 1)
+		//TestMat(i, :) = cos((mod(TestMat(i, :), frequencyVec(i - 1)) / frequencyVec(i - 1)) * 2 * pi); // cos of the phases of the remaining frequency
+
+	//////////////////////////////////////////////////////////////////////////
+	//TestMat.col(0) = TestMat.col(0); //行操作
+	//////////////////////////////////////////////////////////////////////////
+
+	//float* data = TestMat.ptr<float>(i); //得到对i行的首地址
+	// 处理第一行
+	for (int j = 0; j < TestMat.cols; j++)
+	{
+		float cur = TestMat.at<float>(0, j);
+		TestMat.at<float>(0, j) = cos( ( fmod(cur, frequencyVec[0]) / frequencyVec[0]) * 2 * CV_PI);
+	}
+
+	// 处理第二行
+	for (int j = 0; j < TestMat.cols; j++)
+	{
+		float cur = TestMat.at<float>(1, j);
+		TestMat.at<float>(1, j) = sin( ( fmod(cur, frequencyVec[0]) / frequencyVec[0]) * 2 * CV_PI);
+	}
+
+	//处理剩余行
+	for (int i = 0; i < TestMat.rows; i++)
+	{
+		for (int j = 0; j < TestMat.cols; j++)
+		{
+			float cur = TestMat.at<float>(i, j);
+			TestMat.at<float>(i, j) = cos( ( fmod(cur, frequencyVec[i-1]) / frequencyVec[i-1]) * 2 * CV_PI);
+		}
+	}
+
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	cv::Mat IC = zeros(1, nr * nc); // Vector of column-values
+	//cv::Mat IC = zeros(1, nr * nc); // Vector of column-values
+	cv::Mat IC = cv::Mat::zeros(1, nr * nc, CV_64F); // Vector of column-values
 
 	//For each camera pixel, find the closest match
 	//This loop can be run in parallel using MATLAB parallel toolbox. The number here is the number of cores on your machine.
@@ -170,6 +217,7 @@ cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<float> freq
 	//This loop can be run in parallel using MATLAB parallel toolbox.The number here is the number of cores on your machine.
 	// parpool;
 
+	/*
 	for i = 1:size(CosSinMat, 2)
 	{
 		CosSinVec = CosSinMat(:, i);
@@ -177,11 +225,38 @@ cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<float> freq
 		[~, Ind] = min(ErrorVec(:));
 		IC(1, i) = Ind;
 	}
+	*/
+
+	for (int i = 0; i < CosSinMat.cols; i++)
+	{
+		//[~, Ind] = min(ErrorVec(:)); //i表示最小值所在位置
+		//IC(1, i) = Ind;
+
+		cv::Mat CosSinVec = CosSinMat.colRange(i, i+1).clone();
+		cv::Mat t1 = cv::Mat( CosSinVec.rows, numProjColumns, CV_64F );
+		for (size_t j = 0; j < numProjColumns; j++)
+		{
+			t1.col(j) = CosSinVec;
+		}
+		
+		cv::Mat t2 = abs(t1 - TestMat)^2;			 //元素求平方
+		cv::Mat ErrorVec(1, numProjColumns, CV_64F); //每一列进行求和
+
+		reduce(t2, ErrorVec, 0, CV_REDUCE_SUM);
+
+		double minVal, maxVal;
+		int minIdx, maxIdx;
+
+		cv::minMaxIdx( ErrorVec, &minVal, &maxVal, &minIdx, &maxIdx );
+
+		IC.at<double>(0, i) = minIdx; //将最小值的坐标赋给IC矩阵
+	}
 
 	// matlabpool close;
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	IC = IC - 1; // Getting the estimates in to the range[0:numProjColumns - 1], because the sinusoids were made in this range.
+	// Getting the estimates in to the range[0:numProjColumns - 1], because the sinusoids were made in this range.
+	IC = IC - 1;
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	/*
@@ -189,21 +264,57 @@ cv::Mat PhaseUnwrapCosSinValsToColumnIndex(cv::Mat CosSinMat, vector<float> freq
 	% since it has both cosand sin values.
 	*/
 
+	/*
 	PhaseFirstFrequency = acos(CosSinMat(1, :)); // acos returns values in[0, pi] range.There is a 2 way ambiguity.
 	PhaseFirstFrequency(CosSinMat(2, :) < 0) = 2 * pi - PhaseFirstFrequency(CosSinMat(2, :) < 0); // Using the sin value to resolve the ambiguity
 	ColumnFirstFrequency = PhaseFirstFrequency * frequencyVec(1) / (2 * pi); // The phase for the first frequency, in pixel units.This is equal to mod(trueColumn, frequencyVec(1)).
+	*/
 
-	float NumCompletePeriodsFirstFreq = floor(IC / frequencyVec(1)); // The number of complete periods for the first frequency
+	cv::Mat PhaseFirstFrequency = CosSinMat.row(0); //第一行
+	for (size_t j = 0; j < PhaseFirstFrequency.cols; j++)
+	{
+		PhaseFirstFrequency.at<double>(0, j) = acos( PhaseFirstFrequency.at<double>(0, j) ); //acos returns values in[0, pi] range.There is a 2 way ambiguity.
+	}
 
-	cv::Mat ICFrac = NumCompletePeriodsFirstFreq * frequencyVec(1) + ColumnFirstFrequency; // The final correspondence, with the fractional component
+	for (size_t j = 0; j < PhaseFirstFrequency.cols; j++)
+	{
+		if (CosSinMat.at<double>(1, j) < 0)
+		{
+			PhaseFirstFrequency.at<double>(0, j) = 2 * CV_PI - PhaseFirstFrequency.at<double>(0, j); //Using the sin value to resolve the ambiguity
+		}
+	}
+	cv::Mat ColumnFirstFrequency = PhaseFirstFrequency * frequencyVec[0] / (2 * CV_PI); //The phase for the first frequency, in pixel units.This is equal to mod(trueColumn, frequencyVec(1)).
+
+	cv::Mat NumCompletePeriodsFirstFreq = IC.clone();
+	for ( int i = 0; i < NumCompletePeriodsFirstFreq.rows; i++ )
+	{
+		for (int j = 0; j < NumCompletePeriodsFirstFreq.cols; j++)
+		{
+			NumCompletePeriodsFirstFreq.at<double>(i, j) = floor(IC.at<double>(i, j) / frequencyVec[0]); // The number of complete periods for the first frequency
+		}
+	}
+
+	cv::Mat ICFrac = NumCompletePeriodsFirstFreq * frequencyVec[0] + ColumnFirstFrequency; // The final correspondence, with the fractional component
 
 	//If the difference after fractional correction is large(because of noise), keep the original value.
-	ICFrac(abs(ICFrac - IC) >= 1) = IC(abs(ICFrac - IC) >= 1);
+	for (int i = 0; i < ICFrac.rows; i++)
+	{
+		for (int j = 0; j < ICFrac.cols; j++)
+		{
+			if (abs(ICFrac.at<double>(i, j) - IC.at<double>(i, j)) >= 1)
+			{
+				ICFrac.at<double>(i, j) = IC.at<double>(i, j);
+			}
+		}
+	}
+			
+	//ICFrac(abs(ICFrac - IC) >= 1) = IC(abs(ICFrac - IC) >= 1);
 
 	IC = ICFrac;
 
 	//Adding back the one to get it in the range[1, numProjColumns]
 	IC = IC + 1;
-	IC = reshape(IC, [nr nc]); //Reshaping to make the same size as the captured image
 
+	//IC = reshape(IC, [nr nc]); //Reshaping to make the same size as the captured image
 }
+#endif
